@@ -885,7 +885,6 @@ CLIBAPI int clib_menu(Cstr title, int color, ClibPrintOptionFunc print_option, C
     clib_disable_input_buffering();
 
     int selected = 0;
-    size_t size = 0;
     CstrArray options = {0};
 
     if (first_option == NULL) {

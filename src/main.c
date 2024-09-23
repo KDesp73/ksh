@@ -12,11 +12,15 @@
 #include "clib.h"
 #include "tokenizer.h"
 #include "ui.h"
+#include "globals.h"
 
 static char input[MAX_INPUT_LENGTH] = {0};
+volatile sig_atomic_t interrupted = 0;
 
 void handle_sigint(int sig) {
-
+    interrupted = 1;
+    printf("\n");
+    fflush(stdout);
 }
 
 int main() {
@@ -26,11 +30,23 @@ int main() {
 
     system("clear");
     for(;;) {
+        interrupted = 0;
         int bg = 0;
         char* prompt = clib_str_format("%s%s%s | %s%s%s > ", ANSI_BLUE, env->cwd, ANSI_RESET, ANSI_GREEN, env->user, ANSI_RESET);
 
+        if (interrupted) {
+            memset(input, 0, sizeof(input));
+            free(prompt);
+            continue;
+        }
+
         ui_prompt(prompt, input);
         free(prompt);
+
+        if (interrupted) {
+            memset(input, 0, sizeof(input));
+            continue;
+        }
 
         size_t count;
         env->last_tokens = tokenize(input, &count);

@@ -4,8 +4,10 @@
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "env.h"
+#include "globals.h"
 
 #define CTRL_KEY(k) ((k) & 0x1f)
+
 
 void move_right(int i) {
     printf("\033[%dC", i);
@@ -60,6 +62,11 @@ void ui_prompt(const char* prompt, char input[]) {
 
     char c;
     do {
+        if (interrupted) {
+            INFO("Ctrl+C");
+            input[0] = '\0'; // Clear the input
+            return;
+        }
         c = clib_getch();
 
         if (c == CLIB_KEY_BACKSPACE) {
@@ -71,12 +78,12 @@ void ui_prompt(const char* prompt, char input[]) {
         } else if (c == CLIB_KEY_ARROW_LEFT) {
             pos = clamp(pos - 1, 0, len);
             if (pos > 0) {
-                move_left(2);
+                move_left(1);
             }
         } else if (c == CLIB_KEY_ARROW_RIGHT) {
             pos = clamp(pos + 1, 0, len);
             if (pos < len) {
-                move_right(2);
+                move_right(1);
             }
         } else if (c == CLIB_KEY_ARROW_UP) {
             // TODO: loop history
