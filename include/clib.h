@@ -170,6 +170,7 @@ CLIBAPI char* clib_str_buffer_init();
 CLIBAPI void clib_str_append_ln(char** buffer, Cstr text);
 CLIBAPI void clib_str_append(char** buffer, const char* text);
 CLIBAPI void clib_str_clean(char** buffer);
+CLIBAPI char* clib_str_replace(const char* str, const char* search, const char* replace);
 CLIBAPI void println(const char* fmt, ...);
 
 // UTILS
@@ -412,6 +413,39 @@ CLIBAPI void println(const char* fmt, ...)
     va_start(args, fmt);
     printf(fmt, args);
     va_end(args);
+}
+
+CLIBAPI char* clib_str_replace(const char* str, const char* search, const char* replace)
+{
+    char* result = NULL;
+    char* idx = NULL;
+    size_t search_len = strlen(search);
+    size_t replace_len = strlen(replace);
+    size_t str_len = strlen(str);
+    size_t buffer_size = str_len;
+
+    // Allocate initial buffer
+    result = (char*)malloc(buffer_size + 1);
+    if (result == NULL) {
+        return NULL;
+    }
+    strcpy(result, str);
+
+    // Find and replace all occurrences
+    idx = strstr(result, search);
+    while (idx != NULL) {
+        size_t offset = idx - result;
+        buffer_size += replace_len - search_len;
+        result = (char*)realloc(result, buffer_size + 1);
+        if (result == NULL) {
+            return NULL;
+        }
+        memmove(result + offset + replace_len, result + offset + search_len, strlen(result + offset + search_len) + 1);
+        memcpy(result + offset, replace, replace_len);
+        idx = strstr(result + offset + replace_len, search);
+    }
+
+    return result;
 }
 
 CLIBAPI char* clib_str_format(const char *format, ...)

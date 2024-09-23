@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Wall -Iinclude -ggdb
+LDFLAGS =
 
 SRC_DIR = src
 INCLUDE_DIR = include
@@ -23,7 +24,7 @@ $(BUILD_DIR):
 
 # Rule to build the executable
 $(TARGET): $(OBJ_FILES)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 # Rule to build object files from source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
