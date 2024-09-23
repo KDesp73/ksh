@@ -26,7 +26,6 @@
 /*
  * Usage: 
  * #define CLIB_IMPLEMENTATION
- * #define CLIB_MENUS // if you want to use the menu methods
  * #inlcude "clib.h"
  *
  * -[TOC]-
@@ -269,7 +268,7 @@ CLIBAPI void clib_log(int log_level, char* format, ...);
     #include <termios.h>
     #include <unistd.h>
 
-    int _getch();
+    CLIBAPI int _getch();
 #endif
 
 // TODO: Add more keys
@@ -714,9 +713,8 @@ CLIBAPI void clib_log(int log_level, char* format, ...)
     if(log_level == CLIB_PANIC) exit(1);
 }
 
-#ifdef CLIB_MENUS
 #ifndef _WIN32
-    int _getch() {
+    CLIBAPI int _getch() {
         struct termios oldt, newt;
         int ch;
         tcgetattr(STDIN_FILENO, &oldt);
@@ -866,8 +864,7 @@ CLIBAPI int clib_getch() {
         case 'x': return CLIB_KEY_x;
         case 'y': return CLIB_KEY_y;
         case 'z': return CLIB_KEY_z;
-        // Add other mappings as needed
-        default: return CLIB_KEY_UNKNOWN;
+        default: return ch;
     }
 }
 
@@ -881,7 +878,7 @@ CLIBAPI void clib_arrow_print_option(Cstr option, int is_selected, int color){
 }
 
 CLIBAPI void clib_brackets_print_option(Cstr option, int is_selected, int color){
-    is_selected ? printf("%s[%s%s%s]%s", COLOR_FG(color), ANSI_RESET, option, COLOR_FG(color), RESET) : printf(" %s ", option);
+    is_selected ? printf("%s[%s%s%s]%s", COLOR_FG(color), ANSI_RESET, option, COLOR_FG(color), ANSI_RESET) : printf(" %s ", option);
 }
 
 CLIBAPI int clib_menu(Cstr title, int color, ClibPrintOptionFunc print_option, Cstr first_option, ...){
@@ -953,7 +950,6 @@ CLIBAPI int clib_menu(Cstr title, int color, ClibPrintOptionFunc print_option, C
         ANSI_CLEAR_BELOW_CURSOR;
     }
 }
-#endif // CLIB_MENUS
 
 CLIBAPI int clib_eu_mod(int a, int b){
     if (b == 0) {

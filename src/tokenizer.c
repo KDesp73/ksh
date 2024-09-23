@@ -1,4 +1,6 @@
 #include "tokenizer.h"
+#define CLIB_IMPLEMENTATION
+#include "clib.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,7 +31,7 @@ char** tokenize(const char* in, size_t* count) {
         (*count)++;
     }
 
-    char** tokens = (char**)malloc((*count) * sizeof(char*));
+    char** tokens = (char**)malloc((*count+1) * sizeof(char*));
 
     in_word = 0;
     size_t token_idx = 0;
@@ -53,6 +55,39 @@ char** tokenize(const char* in, size_t* count) {
         tokens[token_idx++] = strndup(in + start, i - start);
     }
 
+    tokens[*count] = NULL;
+
     return tokens;
 }
 
+void print_tokens(char **tokens, size_t count)
+{
+    printf("[");
+    for(size_t i = 0; i < count; ++i){
+        if(i == count-1){
+            printf("%s", tokens[i]);
+        } else {
+            printf("%s, ", tokens[i]);
+        }
+    }
+    printf("]\n");
+}
+
+char* tokens_to_command(char** tokens, size_t count)
+{
+    char* command = clib_str_buffer_init();
+
+    for(size_t i = 0; i < count; ++i){
+        char* token_str = NULL;
+
+        if(i == count-1){
+            token_str = clib_str_format("%s", tokens[i]);
+        } else {
+            token_str = clib_str_format("%s ", tokens[i]);
+        }
+
+        clib_str_append(&command, token_str);
+    }
+
+    return command;
+}

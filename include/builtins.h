@@ -4,10 +4,11 @@
 #include <stdio.h>
 
 static char* builtins[] = {
+    "builtins",
     "cd",
     "echo",
     "exit",
-    "clear"
+    "clear",
 };
 
 char* cd(const char* path);

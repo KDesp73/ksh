@@ -2,7 +2,11 @@
 #define ENV_H
 
 #include <stdio.h>
-#define MAX_INPUT_LENGTH 1000
+#define MAX_INPUT_LENGTH 1024
+
+#define REPLACE_HOME(path) \
+    clib_str_replace(path, getenv("HOME"), "~")
+
 
 typedef struct {
     char* home;

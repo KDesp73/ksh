@@ -5,8 +5,16 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "env.h"
+
+void print_builtins()
+{
+    for(size_t i = 0; i < ARRAY_LEN(builtins); ++i){
+        printf("%s\n", builtins[i]);
+    }
+}
 
 int is_builtin(const char *command)
 {
@@ -23,7 +31,7 @@ int exec_builtin(env_t* env)
         if (path == NULL) {
             return -1;
         }
-        env->cwd = path;
+        env->cwd = REPLACE_HOME(path);
     } else if(STREQ("echo", env->last_tokens[0])) {
         echo(env->last_tokens, env->tokens_count);
     } else if(STREQ("exit", env->last_tokens[0])) {
@@ -35,6 +43,8 @@ int exec_builtin(env_t* env)
         }
     } else if (STREQ("clear", env->last_tokens[0])) {
         system("clear");
+    } else if(STREQ("builtins", env->last_tokens[0])) {
+        print_builtins();
     }
 
     return 0;
@@ -43,39 +53,131 @@ int exec_builtin(env_t* env)
 char* cd(const char* path) 
 {
     char* temp = NULL;
-    if (!path)
+
+    if (!path || strcmp("~", path) == 0) {
         temp = getenv("HOME");
-    else if (strcmp("~", path) == 0)
-        temp = getenv("HOME");
-    else if (strcmp("-", path) == 0) {
+    } else if (strcmp("-", path) == 0) {
         temp = getcwd(NULL, 0);
+    } else {
+        temp = strdup(path);
     }
 
-    if (!chdir(temp)) return temp;
+    if (!temp) {
+        printf("cd: invalid path\n");
+        return NULL;
+    }
+
+    if (chdir(temp) == 0) {
+        if (strcmp("-", path) == 0) {
+            return temp; // caller should free it after use
+        }
+        return getcwd(NULL, 0);
+    }
 
     switch (errno) {
         case EACCES:
-            printf("cd: permission denied");
+            printf("cd: permission denied\n");
             break;
         case EIO:
-            printf("cd: IO error");
+            printf("cd: IO error\n");
             break;
         case ELOOP:
-            printf("cd: looping symbolic links");
+            printf("cd: looping symbolic links\n");
             break;
         case ENAMETOOLONG:
         case ENOENT:
         case ENOTDIR:
-            printf("cd: invalid directory");
+            printf("cd: invalid directory\n");
+            break;
     }
+
+    if (strcmp("-", path) == 0) {
+        free(temp);
+    }
+
     return NULL;
 }
 
-// TODO: [-neE] options implementation
+// TODO:
+// 1. Dont print quotes unless escaped
+// 2. Working -eE
 void echo(char **tokens, size_t count)
 {
-    for(size_t i = 1; i < count; ++i) {
-        printf("%s ", tokens[i]); // TODO: correct printing
+    _Bool newline = true;  // By default, append a newline
+    _Bool interpret_escapes = false;  // By default, don't interpret escapes
+
+    // Parse options if they start with a '-'
+    size_t i = 1;
+    if (i < count && tokens[i][0] == '-') {
+        for (size_t j = 1; tokens[i][j] != '\0'; ++j) {
+            switch (tokens[i][j]) {
+                case 'n':
+                    newline = false;
+                    break;
+                case 'e':
+                    interpret_escapes = true;
+                    break;
+                case 'E':
+                    interpret_escapes = false;
+                    break;
+                default:
+                    goto print_tokens;
+            }
+        }
+        ++i;
     }
-    printf("\n");
+
+print_tokens:
+    for (; i < count; ++i) {
+        char *token = tokens[i];
+        size_t len = strlen(token);
+
+        if ((token[0] == '"' && token[len - 1] == '"') || 
+                (token[0] == '\'' && token[len - 1] == '\'')) {
+            token[len - 1] = '\0';
+            ++token;
+        }
+
+        if (STREQ("-e", token)) continue;
+        if (STREQ("-E", token)) continue;
+        if (STREQ("-n", token)) continue;
+
+        if (interpret_escapes) {
+            for (char *p = tokens[i]; *p != '\0'; ++p) {
+                if (*p == '\\') {
+                    switch (*(p + 1)) {
+                        case 'n':
+                            printf("\n");
+                            ++p;
+                            break;
+                        case 't':
+                            printf("\t");
+                            ++p;
+                            break;
+                        case '\\':
+                            printf("\\");
+                            ++p;
+                            break;
+                        // Add more escape sequences as needed
+                        default:
+                            printf("\\%c", *(p + 1));
+                            ++p;
+                    }
+                } else {
+                    putchar(*p);
+                }
+            }
+        } else {
+            printf("%s", tokens[i]);
+        }
+
+        if (i < count - 1) {
+            printf(" ");
+        }
+    }
+
+    if (newline) {
+        printf("\n");
+    }
 }
+

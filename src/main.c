@@ -1,40 +1,57 @@
-#include "builtins.h"
-#include "env.h"
-#include "processes.h"
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "builtins.h"
+#include "env.h"
+#include "processes.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "tokenizer.h"
+#include "ui.h"
 
+static char input[MAX_INPUT_LENGTH] = {0};
 
-int main(){
+void handle_sigint(int sig) {
+
+}
+
+int main() {
+    signal(SIGINT, handle_sigint);
+
     env_t* env = get_env();
-    char input[MAX_INPUT_LENGTH];
 
-    for(;;){
+    system("clear");
+    for(;;) {
+        int bg = 0;
         char* prompt = clib_str_format("%s%s%s | %s%s%s > ", ANSI_BLUE, env->cwd, ANSI_RESET, ANSI_GREEN, env->user, ANSI_RESET);
-        printf("%s", prompt);
-        if (fgets(input, MAX_INPUT_LENGTH, stdin) != NULL) {
-            input[strcspn(input, "\n")] = '\0';
-        } else {
-            continue;
-        }
+
+        ui_prompt(prompt, input);
         free(prompt);
 
         size_t count;
         env->last_tokens = tokenize(input, &count);
         env->tokens_count = count;
+        print_tokens(env->last_tokens, count);
+
+        // Reset input
+        memset(input, 0, sizeof(input));
 
         if(count <= 0) continue;
 
-        if (is_builtin(env->last_tokens[0])) {
-            INFO("Builtin");
-            exec_builtin(env);
+        if (STREQ("&", env->last_tokens[count-1])) {
+            bg = 1;
+            env->last_tokens[--env->tokens_count] = NULL;
         }
 
+        if (is_builtin(env->last_tokens[0])) {
+            exec_builtin(env);
+        } else {
+            fork_process(env->last_tokens, count, bg);
+        }
 
         free_tokens(&env->last_tokens, count);
     }
@@ -43,3 +60,4 @@ int main(){
 
     return 0;
 }
+
