@@ -49,7 +49,10 @@ int main() {
         }
 
         size_t count;
-        env->last_tokens = tokenize(input, &count);
+        char** tokens = tokenize(input, &count);
+        tokens = replace_env(tokens, count);
+
+        env->last_tokens = tokens;
         env->tokens_count = count;
         print_tokens(env->last_tokens, count);
 

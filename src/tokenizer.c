@@ -44,7 +44,7 @@ char* replace_variable_with_env(const char* input) {
         var_value = "";
     }
 
-    size_t new_length = (dollar - input) + strlen(var_value) + (slash ? (strlen(slash)) : (strlen(input) - (dollar - input + 1))); // Calculate new length
+    size_t new_length = (dollar - input) + strlen(var_value) + (slash ? (strlen(slash)) : (strlen(input) - (dollar - input + 1)));
 
     char* result = (char*)malloc(new_length + 1); // +1 for null terminator
     if (result == NULL) {
@@ -102,10 +102,6 @@ char** tokenize(const char* in, size_t* count) {
             tokens = new_tokens;
         }
         
-        if (search(token, '$')){
-            token = replace_variable_with_env(token);
-        }
-
         tokens[*count] = strdup(token);
         if (!tokens[*count]) {
             for (size_t j = 0; j < *count; j++) {
@@ -124,6 +120,16 @@ char** tokenize(const char* in, size_t* count) {
 
     tokens[*count] = NULL;
 
+    return tokens;
+}
+
+char** replace_env(char** tokens, size_t count)
+{
+    for(size_t i = 0; i < count; ++i){
+        if (search(tokens[i], '$')){
+            tokens[i] = replace_variable_with_env(tokens[i]);
+        }
+    }
     return tokens;
 }
 
