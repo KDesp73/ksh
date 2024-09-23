@@ -13,6 +13,7 @@
 #include "tokenizer.h"
 #include "ui.h"
 #include "globals.h"
+#include "cli.h"
 
 static char input[MAX_INPUT_LENGTH] = {0};
 volatile sig_atomic_t interrupted = 0;
@@ -23,9 +24,7 @@ void handle_sigint(int sig) {
     fflush(stdout);
 }
 
-int main() {
-    signal(SIGINT, handle_sigint);
-
+void loop(){
     env_t* env = get_env();
 
     system("clear");
@@ -76,6 +75,47 @@ int main() {
     }
 
     free_env(&env);
+}
+
+int main(int argc, char** argv) {
+    signal(SIGINT, handle_sigint);
+
+    CliArguments args = clib_cli_make_arguments(2, 
+        clib_cli_create_argument('h', "help", "", no_argument),
+        clib_cli_create_argument('v', "version", "", no_argument)
+    );
+
+    struct option* opts = clib_cli_get_options(args);
+    char* fmt = clib_cli_generate_format_string(args);
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, fmt, opts, ((void *)0))) != -1) {
+        switch (opt) {
+        case OPT_HELP:
+            help();
+            free(opts);
+            free(fmt);
+            clib_cli_clean_arguments(&args);
+            exit(0);
+        case OPT_VERSION:
+            printf("ksh v%s\n", VERSION);
+            free(opts);
+            free(fmt);
+            clib_cli_clean_arguments(&args);
+            exit(0);
+        default:
+            help();
+            free(opts);
+            free(fmt);
+            clib_cli_clean_arguments(&args);
+            exit(1);
+        }
+    }
+    free(opts);
+    free(fmt);
+    clib_cli_clean_arguments(&args);
+
+    loop();
 
     return 0;
 }
