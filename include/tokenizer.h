@@ -3,10 +3,10 @@
 
 #include "alias.h"
 #include <stdio.h>
-char** tokenize(const char* in, size_t* count);
 
+char** tokenize(const char* input, size_t *count);
 char** replace_env(char** tokens, size_t count);
-char** replace_aliases(alias_table_t* table, char** tokens, size_t count);
+char** replace_aliases(alias_table_t* table, char** tokens, size_t* count);
 
 void free_tokens(char*** tokens, size_t count);
 char* tokens_to_string(char** tokens, size_t count);

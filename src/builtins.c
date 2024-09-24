@@ -2,6 +2,7 @@
 #include "alias.h"
 #include "history.h"
 #include "interpreter.h"
+#include "utils.h"
 #include "pair.h"
 #include "processes.h"
 #include "tokenizer.h"
@@ -149,9 +150,11 @@ void export(const char* keyvalue)
     }
 }
 
+
 // TODO:
 // 1. Dont print quotes unless escaped
 // 2. Working -eE
+// 3. Handle "$(command)" // Maybe another place
 void echo(char **tokens, size_t count)
 {
     _Bool newline = true;  // By default, append a newline
@@ -181,6 +184,7 @@ void echo(char **tokens, size_t count)
 print_tokens:
     for (; i < count; ++i) {
         char *token = tokens[i];
+        token = extract_content(token);
         size_t len = strlen(token);
 
         if ((token[0] == '"' && token[len - 1] == '"') || 
@@ -219,7 +223,7 @@ print_tokens:
                 }
             }
         } else {
-            printf("%s", tokens[i]);
+            printf("%s", token);
         }
 
         if (i < count - 1) {

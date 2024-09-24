@@ -1,6 +1,7 @@
 #include "tokenizer.h"
 #include "alias.h"
 #include "env.h"
+#include "utils.h"
 #include <ctype.h>
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
@@ -79,7 +80,8 @@ int search(const char* str, char c){
 // "a b="c"" -> [a, b="c"]
 // "a b="c d"" -> [a, b="c d"]
 
-char** tokenize(const char* input, size_t *count) {
+char** tokenize(const char* input, size_t *count) 
+{
     char* in = strdup(input);
     *count = 0;
 
@@ -214,19 +216,25 @@ char** replace_env(char** tokens, size_t count)
 {
     for(size_t i = 0; i < count; ++i){
         if (search(tokens[i], '$')){
+            tokens[i] = extract_content(tokens[i]);
             tokens[i] = replace_variable_with_env(tokens[i]);
         }
     }
     return tokens;
 }
 
-char** replace_aliases(alias_table_t* table, char** tokens, size_t count)
+char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
 {
-    for(size_t i = 0; i < count; ++i){
+    for(size_t i = 0; i < *count; ++i){
         char* token = tokens[i];
 
         char* val = alias_find(table, token);
         if (val != NULL) {
+            // DEBU("val: %s", val);
+            // size_t alias_token_count;
+            // char** alias_tokens = tokenize(val, &alias_token_count);
+            //
+            // insert_char_array(tokens, *count, alias_tokens, alias_token_count, i, count);
             tokens[i] = val;
         }
     }

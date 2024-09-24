@@ -42,6 +42,7 @@ void alias_remove(alias_table_t* table, const char* name)
 
 char* alias_find(alias_table_t* table, const char* name)
 {
+    if (name == NULL) return NULL;
     for (size_t i = 0; i < table->count; i++) {
         if (strcmp(table->aliases[i].name, name) == 0) {
             return table->aliases[i].command;

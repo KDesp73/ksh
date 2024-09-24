@@ -13,7 +13,7 @@ int interpret(env_t* env, char* input)
     size_t count;
     char** tokens = tokenize(input, &count);
     tokens = replace_env(tokens, count);
-    tokens = replace_aliases(env->aliases, tokens, count);
+    tokens = replace_aliases(env->aliases, tokens, &count);
     print_tokens(tokens, count);
 
     env->last_tokens = tokens;
@@ -39,5 +39,5 @@ int interpret(env_t* env, char* input)
     memset((char*) input, 0, sizeof(input));
     free_tokens(&env->last_tokens, count);
 
-    return SHELL_SUCCESS;
+    return 0;
 }
