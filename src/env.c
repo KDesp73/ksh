@@ -21,6 +21,8 @@ env_t* get_env()
 void free_env(env_t** env)
 {
     free((char*) (*env)->cwd);
+    aliases_free(&(*env)->aliases);
+    history_free(&(*env)->history);
 
     free(*env);
 }

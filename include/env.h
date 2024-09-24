@@ -5,10 +5,15 @@
 #include "history.h"
 #include <stdio.h>
 
+// Negative return codes indicate program error
 #define SHELL_SUCCESS 0
+// Positive return codes indicate user error
+
 #define MAX_INPUT_LENGTH 1024
-#define REPLACE_HOME(path) \
+#define REPLACE_HOME_WITH_TILDA(path) \
     clib_str_replace(path, getenv("HOME"), "~")
+#define REPLACE_TILDA_WITH_HOME(path) \
+    clib_str_replace(path, "~", getenv("HOME"))
 
 
 typedef struct {

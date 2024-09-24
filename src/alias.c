@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+void aliases_free(alias_table_t** table)
+{
+    for(size_t i = 0; i < (*table)->count; i++){
+        free((*table)->aliases[i].name);
+        free((*table)->aliases[i].command);
+    }
+    free(*table);
+}
+
 alias_table_t* alias_create_table() 
 {
     alias_table_t* table = (alias_table_t*)malloc(sizeof(alias_table_t));
@@ -44,8 +53,10 @@ char* alias_find(alias_table_t* table, const char* name)
 {
     if (name == NULL) return NULL;
     for (size_t i = 0; i < table->count; i++) {
+        if(table->aliases[i].name == NULL) continue;
+
         if (strcmp(table->aliases[i].name, name) == 0) {
-            return table->aliases[i].command;
+            return strdup(table->aliases[i].command);
         }
     }
     return NULL;

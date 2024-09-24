@@ -1,5 +1,6 @@
 #include "builtins.h"
 #include "alias.h"
+#include "globals.h"
 #include "history.h"
 #include "interpreter.h"
 #include "utils.h"
@@ -39,7 +40,7 @@ int exec_builtin(env_t* env)
         if (path == NULL) {
             return -1;
         }
-        env->cwd = REPLACE_HOME(path);
+        env->cwd = REPLACE_HOME_WITH_TILDA(path);
     } else if(STREQ("echo", command)) {
         echo(env->last_tokens, env->tokens_count);
     } else if(STREQ("exit", command)) {
@@ -74,9 +75,15 @@ int exec_builtin(env_t* env)
         alias_remove(env->aliases, env->last_tokens[1]);
     } else if(STREQ("test_tokenizer", command)){
         test_tokenize();
-    } 
+    } else if(STREQ("source", command)) {
+        if(env->tokens_count < 2) {
+            fprintf(stderr, "No path specified\n");
+            return 1;
+        }
+        source(env, env->last_tokens[1]);
+    }
 
-    return 0;
+    return SHELL_SUCCESS;
 }
 
 
@@ -236,3 +243,18 @@ print_tokens:
     }
 }
 
+void source(env_t *env, const char* file)
+{
+    size_t line_count;
+    char** lines = read_non_empty_lines(file, &line_count);
+    INFO("lines: %zu", line_count);
+
+    for(size_t i = 0; i < line_count; i++){
+        if (lines[i] == NULL) continue;
+        if (lines[i][0] == '#') continue; // Skip comments
+
+        if (interpret(env, lines[i], 0) != SHELL_SUCCESS){
+            printf("Error in line: %zu\n", i);
+        }
+    }
+}

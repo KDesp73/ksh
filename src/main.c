@@ -11,6 +11,7 @@
 #include "history.h"
 #include "interpreter.h"
 #include "processes.h"
+#include "utils.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "tokenizer.h"
@@ -27,10 +28,7 @@ void handle_sigint(int sig) {
     fflush(stdout);
 }
 
-void loop(){
-    env_t* env = get_env();
-
-    system("clear");
+void loop(env_t* env){
     for(;;) {
         interrupted = 0;
         char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
@@ -49,10 +47,8 @@ void loop(){
             continue;
         }
 
-        if(interpret(env, input) != SHELL_SUCCESS) continue;
+        if(interpret(env, input, 1) != SHELL_SUCCESS) continue;
     }
-
-    free_env(&env);
 }
 
 int main(int argc, char** argv) {
@@ -94,8 +90,18 @@ int main(int argc, char** argv) {
     clib_cli_clean_arguments(&args);
 
     history_setup_file();
+    char* src_file = KSHRC_FILE;
+    create_file(src_file);
+    free(src_file);
 
-    loop();
+    env_t* env = get_env();
+
+    system("clear");
+
+    source(env, KSHRC_FILE);
+    loop(env);
+
+    free_env(&env);
 
     return 0;
 }

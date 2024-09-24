@@ -10,6 +10,7 @@
 
 void free_tokens(char*** tokens, size_t count)
 {
+    if(*tokens == NULL) return;
     for (size_t i = 0; i < count; i++) {
         if ((*tokens)[i] != NULL)
             free((*tokens)[i]);
@@ -17,54 +18,6 @@ void free_tokens(char*** tokens, size_t count)
     free(*tokens);
 }
 
-char* replace_variable_with_env(const char* input) {
-    const char* dollar = strchr(input, '$'); // Find the first '$'
-    if (!dollar) {
-        return strdup(input); // No '$' found, return a copy of the input
-    }
-
-    const char* slash = strchr(dollar, '/'); // Find the first '/' after '$'
-
-    size_t var_length = (slash ? (slash - dollar - 1) : (strlen(dollar) - 1)); // Length of variable name excluding '$'
-    
-
-    if (var_length == 0) { // Check for zero length
-        return strdup(input); // If no variable name, return the input
-    }
-
-    char* var_name = (char*)malloc(var_length + 1);
-    if (var_name == NULL) {
-        PANIC("Couldn't allocate memory for var_name");
-    }
-
-    strncpy(var_name, dollar + 1, var_length); // Copy the variable name
-    var_name[var_length] = '\0'; // Null-terminate the variable name
-
-
-    char* var_value = getenv(var_name);
-    free(var_name);
-
-    if (!var_value) {
-        var_value = "";
-    }
-
-    size_t new_length = (dollar - input) + strlen(var_value) + (slash ? (strlen(slash)) : (strlen(input) - (dollar - input + 1)));
-
-    char* result = (char*)malloc(new_length + 1); // +1 for null terminator
-    if (result == NULL) {
-        PANIC("Couldn't allocate memory for result");
-    }
-
-    strncpy(result, input, dollar - input);
-    result[dollar - input] = '\0';
-
-    strcat(result, var_value);
-
-    if (slash)
-        strcat(result, slash);
-
-   return result; // Return the new string
-}
 
 int search(const char* str, char c){
     for(size_t i = 0; i < strlen(str); i++){
@@ -175,8 +128,6 @@ char** tokenize(const char* input, size_t *count)
         }
     }
 
-    free(in);
-
     tokens[*count] = NULL; // Null-terminate the array
     return tokens;
 }
@@ -186,19 +137,20 @@ int test_tokenize()
 {
     char* io[][2] = {
         {"a b c d", "[a, b, c, d]"},
-        {"a b \"c d\"", "[a, b, \"c d\"]"},
+        {"a b 'c d'", "[a, b, 'c d']"},
         {"a b=c", "[a, b=c]"},
-        {"a b=\"c\"", "[a, b=\"c\"]"},
-        {"a b=\"c d\"", "[a, b=\"c d\"]"},
-        {"alias la=\"ls -a\"", "[alias, la=\"ls -a\"]"},
+        {"a b='c'", "[a, b='c']"},
+        {"a b='c d'", "[a, b='c d']"},
+        {"alias la='ls -a'", "[alias, la='ls -a']"},
+        {"alias ls='ls --color=auto'", "[alias, ls='ls --color=auto']"},
     };
 
-
     int passed = 1;
+    char* tokens_str;
     for(size_t i = 0; i < ARRAY_LEN(io); i++) {
         size_t count;
         char** tokens = tokenize(io[i][0], &count);
-        char* tokens_str = tokens_to_string(tokens, count);
+        tokens_str = tokens_to_string(tokens, count);
         
         if(!STREQ(io[i][1], tokens_str)){
             printf("%sfailed%s at '%s' (found: %s, expected: %s)\n", ANSI_RED, ANSI_RESET, io[i][0], tokens_str, io[i][1]);
@@ -214,31 +166,43 @@ int test_tokenize()
 
 char** replace_env(char** tokens, size_t count)
 {
+    int change_occured = 0;
     for(size_t i = 0; i < count; ++i){
+        if(search(tokens[i], '~')) {
+            tokens[i] = REPLACE_TILDA_WITH_HOME(tokens[i]);
+            change_occured = 1;
+        }
         if (search(tokens[i], '$')){
             tokens[i] = extract_content(tokens[i]);
             tokens[i] = replace_variable_with_env(tokens[i]);
+            change_occured = 1;
         }
     }
-    return tokens;
+
+    if(!change_occured) return tokens;
+
+    return replace_env(tokens, count);
 }
 
 char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
 {
+    if (table == NULL) return tokens;
+
+    int change_occured = 0;
     for(size_t i = 0; i < *count; ++i){
         char* token = tokens[i];
+        if (token == NULL) continue;
 
         char* val = alias_find(table, token);
-        if (val != NULL) {
-            // DEBU("val: %s", val);
-            // size_t alias_token_count;
-            // char** alias_tokens = tokenize(val, &alias_token_count);
-            //
-            // insert_char_array(tokens, *count, alias_tokens, alias_token_count, i, count);
+        if(val != NULL) {
             tokens[i] = val;
+            change_occured = 1;
         }
     }
-    return tokens;
+
+    if(!change_occured) return tokens;
+
+    return replace_aliases(table, tokens, count);
 }
 
 char* tokens_to_string(char** tokens, size_t count)
@@ -258,7 +222,9 @@ char* tokens_to_string(char** tokens, size_t count)
     }
     clib_str_append(&buffer, "]");
 
-    return buffer;
+    char* ret = strdup(buffer);
+    free(buffer);
+    return ret;
 }
 
 void print_tokens(char **tokens, size_t count)
@@ -282,6 +248,7 @@ char* tokens_to_command(char** tokens, size_t count)
         }
 
         clib_str_append(&command, token_str);
+        free(token_str);
     }
 
     return command;

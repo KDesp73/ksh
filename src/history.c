@@ -1,20 +1,22 @@
 #include "history.h"
+#include "utils.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "globals.h"
 
+
+void history_free(history_t** history)
+{
+    for(size_t i = 0; i < (*history)->count; i++){
+        free((*history)->commands[i]);
+    }
+    free(*history);
+}
+
 void history_setup_file()
 {
-    char* dir = clib_str_format("%s/.config/ksh", getenv("HOME"));
-    if (!clib_file_directory_exists(dir)){
-        clib_file_create_directory(dir);
-    }
-    free(dir);
-
-    char*file = HISTORY_FILE;
-    if (!clib_file_exists(file)){
-        clib_file_create(file);
-    }
+    char* file = HISTORY_FILE;
+    create_file(file);
     free(file);
 }
 
