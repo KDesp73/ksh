@@ -8,7 +8,7 @@ static char* builtins[] = {
     "builtins",
     "cd",
     "echo",
-    "exit", "q",
+    "exit", "quit",
     "clear",
     "history",
 };

@@ -33,7 +33,7 @@ void loop(){
     for(;;) {
         interrupted = 0;
         int bg = 0;
-        char* prompt = clib_str_format("%s%s%s | %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
+        char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
 
         if (interrupted) {
             memset(input, 0, sizeof(input));

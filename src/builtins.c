@@ -27,26 +27,27 @@ int is_builtin(const char *command)
 
 int exec_builtin(env_t* env)
 {
-    if(STREQ("cd", env->last_tokens[0])) {
-        char* path = cd(env->last_tokens[1]);
+    char* command = env->last_tokens[0];
+    if(STREQ("cd", command)) {
+        char* path = cd((env->tokens_count == 1) ? NULL : env->last_tokens[1]);
         if (path == NULL) {
             return -1;
         }
         env->cwd = REPLACE_HOME(path);
-    } else if(STREQ("echo", env->last_tokens[0])) {
+    } else if(STREQ("echo", command)) {
         echo(env->last_tokens, env->tokens_count);
-    } else if(STREQ("exit", env->last_tokens[0]) || STREQ("q", env->last_tokens[0])) {
+    } else if(STREQ("exit", command) || STREQ("quit", command)) {
         if (env->tokens_count == 1)
             exit(0);
         else {
             int exit_code = atoi(env->last_tokens[1]);
             exit(exit_code);
         }
-    } else if (STREQ("clear", env->last_tokens[0])) {
+    } else if (STREQ("clear", command)) {
         system("clear");
-    } else if(STREQ("builtins", env->last_tokens[0])) {
+    } else if(STREQ("builtins", command)) {
         print_builtins();
-    } else if(STREQ("history", env->last_tokens[0])) {
+    } else if(STREQ("history", command)) {
         history(env->history);
     }
 
@@ -63,8 +64,11 @@ void history(const history_t* history)
 char* cd(const char* path) 
 {
     char* temp = NULL;
+    if (path != NULL){
+        path = clib_str_replace(path, "~", getenv("HOME"));
+    }
 
-    if (!path || strcmp("~", path) == 0) {
+    if (path == NULL) {
         temp = getenv("HOME");
     } else if (strcmp("-", path) == 0) {
         temp = getcwd(NULL, 0);
@@ -78,7 +82,7 @@ char* cd(const char* path)
     }
 
     if (chdir(temp) == 0) {
-        if (strcmp("-", path) == 0) {
+        if (path != NULL && strcmp("-", path) == 0) {
             return temp; // caller should free it after use
         }
         return getcwd(NULL, 0);
@@ -101,7 +105,7 @@ char* cd(const char* path)
             break;
     }
 
-    if (strcmp("-", path) == 0) {
+    if (path != NULL && strcmp("-", path) == 0) {
         free(temp);
     }
 

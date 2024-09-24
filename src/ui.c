@@ -39,17 +39,14 @@ void insert_character(char input[], char c, int pos, int length) {
 }
 
 void delete_character(char input[], int pos, int length) {
-    // Check if the position is valid
     if (pos < 0 || pos >= length) {
-        return; // Do nothing if the position is invalid
+        return;
     }
 
-    // Shift characters to the left to fill the gap
     for (int i = pos; i < length - 1; i++) {
         input[i] = input[i + 1];
     }
 
-    // Null-terminate the string
     input[length - 1] = '\0'; 
 }
 
@@ -94,12 +91,12 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             len = strlen(input);
         } else if (c == CLIB_KEY_ARROW_DOWN) {
             history_index = clamp(history_index+1, 0, env->history->count);
-            if(history_index == env->history->count)
+            if(history_index == env->history->count){
                 strcpy(input, ""); 
-            else{
+                pos = len = 0;
+            } else {
                 strcpy(input, env->history->commands[history_index]); 
-                len = strlen(input);
-                pos = len;
+                pos = len = strlen(input);
             }
         } else if (c == CTRL_KEY('l')) {
             system("clear");
@@ -113,7 +110,6 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
         printf("\r\033[K%s%s", prompt, input);
         
         fflush(stdout);
-
     } while (c != CLIB_KEY_ENTER);
 
     input[len] = '\0'; // Null-terminate the input

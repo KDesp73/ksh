@@ -273,18 +273,18 @@ CLIBAPI void clib_log(int log_level, char* format, ...);
 
 // TODO: Add more keys
 typedef enum {
+    // arrows (defined later)
+    CLIB_KEY_ARROW_UP,
+    CLIB_KEY_ARROW_DOWN,
+    CLIB_KEY_ARROW_LEFT,
+    CLIB_KEY_ARROW_RIGHT,
+
     CLIB_KEY_UNKNOWN = -1,
     CLIB_KEY_ENTER = 10,
     CLIB_KEY_BACKSPACE = 127,
     CLIB_KEY_TAB = 9,
     CLIB_KEY_ESC = 27,
     CLIB_KEY_SPACE = 32,
-
-    // arrows (defined later)
-    CLIB_KEY_ARROW_UP,
-    CLIB_KEY_ARROW_DOWN,
-    CLIB_KEY_ARROW_LEFT,
-    CLIB_KEY_ARROW_RIGHT,
 
     // numbers
     CLIB_KEY_0 = '0',
