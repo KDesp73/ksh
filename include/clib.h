@@ -279,6 +279,14 @@ typedef enum {
     CLIB_KEY_TAB = 9,
     CLIB_KEY_ESC = 27,
     CLIB_KEY_SPACE = 32,
+
+    // arrows (defined later)
+    CLIB_KEY_ARROW_UP,
+    CLIB_KEY_ARROW_DOWN,
+    CLIB_KEY_ARROW_LEFT,
+    CLIB_KEY_ARROW_RIGHT,
+
+    // numbers
     CLIB_KEY_0 = '0',
     CLIB_KEY_1 = '1',
     CLIB_KEY_2 = '2',
@@ -289,6 +297,8 @@ typedef enum {
     CLIB_KEY_7 = '7',
     CLIB_KEY_8 = '8',
     CLIB_KEY_9 = '9',
+
+    // uppercase
     CLIB_KEY_A = 'A',
     CLIB_KEY_B = 'B',
     CLIB_KEY_C = 'C',
@@ -315,6 +325,8 @@ typedef enum {
     CLIB_KEY_X = 'X',
     CLIB_KEY_Y = 'Y',
     CLIB_KEY_Z = 'Z',
+
+    // lowercase
     CLIB_KEY_a = 'a',
     CLIB_KEY_b = 'b',
     CLIB_KEY_c = 'c',
@@ -341,11 +353,40 @@ typedef enum {
     CLIB_KEY_x = 'x',
     CLIB_KEY_y = 'y',
     CLIB_KEY_z = 'z',
-    // Defined later
-    CLIB_KEY_ARROW_UP,
-    CLIB_KEY_ARROW_DOWN,
-    CLIB_KEY_ARROW_LEFT,
-    CLIB_KEY_ARROW_RIGHT
+
+    // special characters
+    CLIB_KEY_EXCLAMATION = '!',
+    CLIB_KEY_AT = '@',
+    CLIB_KEY_HASH = '#',
+    CLIB_KEY_DOLLAR = '$',
+    CLIB_KEY_PERCENT = '%',
+    CLIB_KEY_CARET = '^',
+    CLIB_KEY_AMPERSAND = '&',
+    CLIB_KEY_ASTERISK = '*',
+    CLIB_KEY_LEFT_PAREN = '(',
+    CLIB_KEY_RIGHT_PAREN = ')',
+    CLIB_KEY_DASH = '-',
+    CLIB_KEY_UNDERSCORE = '_',
+    CLIB_KEY_EQUAL = '=',
+    CLIB_KEY_PLUS = '+',
+    CLIB_KEY_LEFT_BRACKET = '[',
+    CLIB_KEY_RIGHT_BRACKET = ']',
+    CLIB_KEY_LEFT_BRACE = '{',
+    CLIB_KEY_RIGHT_BRACE = '}',
+    CLIB_KEY_SEMICOLON = ';',
+    CLIB_KEY_COLON = ':',
+    CLIB_KEY_SINGLE_QUOTE = '\'',
+    CLIB_KEY_DOUBLE_QUOTE = '"',
+    CLIB_KEY_COMMA = ',',
+    CLIB_KEY_PERIOD = '.',
+    CLIB_KEY_LESS = '<',
+    CLIB_KEY_GREATER = '>',
+    CLIB_KEY_SLASH = '/',
+    CLIB_KEY_QUESTION = '?',
+    CLIB_KEY_BACKSLASH = '\\',
+    CLIB_KEY_PIPE = '|',
+    CLIB_KEY_BACKTICK = '`',
+    CLIB_KEY_TILDE = '~',
 } ClibKey;
 
 typedef void (*ClibPrintOptionFunc)(Cstr option, int is_selected, int color);
@@ -802,6 +843,8 @@ CLIBAPI int clib_getch() {
         case 9: return CLIB_KEY_TAB;
         case 27: return CLIB_KEY_ESC;
         case 32: return CLIB_KEY_SPACE;
+
+        // digits
         case '0': return CLIB_KEY_0;
         case '1': return CLIB_KEY_1;
         case '2': return CLIB_KEY_2;
@@ -812,6 +855,8 @@ CLIBAPI int clib_getch() {
         case '7': return CLIB_KEY_7;
         case '8': return CLIB_KEY_8;
         case '9': return CLIB_KEY_9;
+
+        // uppercase
         case 'A': return CLIB_KEY_A;
         case 'B': return CLIB_KEY_B;
         case 'C': return CLIB_KEY_C;
@@ -838,6 +883,8 @@ CLIBAPI int clib_getch() {
         case 'X': return CLIB_KEY_X;
         case 'Y': return CLIB_KEY_Y;
         case 'Z': return CLIB_KEY_Z;
+
+        // lowercase
         case 'a': return CLIB_KEY_a;
         case 'b': return CLIB_KEY_b;
         case 'c': return CLIB_KEY_c;
@@ -864,6 +911,41 @@ CLIBAPI int clib_getch() {
         case 'x': return CLIB_KEY_x;
         case 'y': return CLIB_KEY_y;
         case 'z': return CLIB_KEY_z;
+
+        // special characters
+        case '!': return CLIB_KEY_EXCLAMATION;
+        case '@': return CLIB_KEY_AT;
+        case '#': return CLIB_KEY_HASH;
+        case '$': return CLIB_KEY_DOLLAR;
+        case '%': return CLIB_KEY_PERCENT;
+        case '^': return CLIB_KEY_CARET;
+        case '&': return CLIB_KEY_AMPERSAND;
+        case '*': return CLIB_KEY_ASTERISK;
+        case '(': return CLIB_KEY_LEFT_PAREN;
+        case ')': return CLIB_KEY_RIGHT_PAREN;
+        case '-': return CLIB_KEY_DASH;
+        case '_': return CLIB_KEY_UNDERSCORE;
+        case '=': return CLIB_KEY_EQUAL;
+        case '+': return CLIB_KEY_PLUS;
+        case '[': return CLIB_KEY_LEFT_BRACKET;
+        case ']': return CLIB_KEY_RIGHT_BRACKET;
+        case '{': return CLIB_KEY_LEFT_BRACE;
+        case '}': return CLIB_KEY_RIGHT_BRACE;
+        case ';': return CLIB_KEY_SEMICOLON;
+        case ':': return CLIB_KEY_COLON;
+        case '\'': return CLIB_KEY_SINGLE_QUOTE;
+        case '"': return CLIB_KEY_DOUBLE_QUOTE;
+        case ',': return CLIB_KEY_COMMA;
+        case '.': return CLIB_KEY_PERIOD;
+        case '<': return CLIB_KEY_LESS;
+        case '>': return CLIB_KEY_GREATER;
+        case '/': return CLIB_KEY_SLASH;
+        case '?': return CLIB_KEY_QUESTION;
+        case '\\': return CLIB_KEY_BACKSLASH;
+        case '|': return CLIB_KEY_PIPE;
+        case '`': return CLIB_KEY_BACKTICK;
+        case '~': return CLIB_KEY_TILDE;
+
         default: return ch;
     }
 }

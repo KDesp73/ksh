@@ -1,4 +1,5 @@
 #include "builtins.h"
+#include "history.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@ int exec_builtin(env_t* env)
         env->cwd = REPLACE_HOME(path);
     } else if(STREQ("echo", env->last_tokens[0])) {
         echo(env->last_tokens, env->tokens_count);
-    } else if(STREQ("exit", env->last_tokens[0])) {
+    } else if(STREQ("exit", env->last_tokens[0]) || STREQ("q", env->last_tokens[0])) {
         if (env->tokens_count == 1)
             exit(0);
         else {
@@ -45,9 +46,18 @@ int exec_builtin(env_t* env)
         system("clear");
     } else if(STREQ("builtins", env->last_tokens[0])) {
         print_builtins();
+    } else if(STREQ("history", env->last_tokens[0])) {
+        history(env->history);
     }
 
     return 0;
+}
+
+void history(const history_t* history)
+{
+    for(size_t i = history->count-1; i > history->count-1-10; i--){
+        printf("%s\n", history->commands[i]);
+    }
 }
 
 char* cd(const char* path) 

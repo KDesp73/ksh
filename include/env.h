@@ -1,6 +1,7 @@
 #ifndef ENV_H
 #define ENV_H
 
+#include "history.h"
 #include <stdio.h>
 #define MAX_INPUT_LENGTH 1024
 
@@ -14,6 +15,7 @@ typedef struct {
     char* cwd;
     char** last_tokens;
     size_t tokens_count;
+    history_t* history;
 } env_t;
 
 env_t* get_env();

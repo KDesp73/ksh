@@ -30,12 +30,19 @@ $(TARGET): $(OBJ_FILES)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+install: $(TARGET)
+	cp $(TARGET) /usr/bin/$(TARGET)
+
+uninstall:
+	rm /usr/bin/$(TARGET)
+
 # Clean rule to remove generated files
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 
 compile_commands.json: $(SRC_FILES)
 	bear -- make
+
 
 # Phony target to avoid conflicts with file names
 .PHONY: all clean

@@ -1,4 +1,5 @@
 #include "env.h"
+#include "history.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include <unistd.h>
@@ -10,6 +11,7 @@ env_t* get_env()
     result->cwd = clib_str_replace(getcwd(NULL, 0), getenv("HOME"), "~");
     result->user = getlogin();
     result->home = getenv("HOME");
+    result->history = history_load();
 
     return result;
 }

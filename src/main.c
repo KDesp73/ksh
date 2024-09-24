@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include <unistd.h>
 #include "builtins.h"
 #include "env.h"
+#include "history.h"
 #include "processes.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
@@ -31,7 +33,7 @@ void loop(){
     for(;;) {
         interrupted = 0;
         int bg = 0;
-        char* prompt = clib_str_format("%s%s%s | %s%s%s > ", ANSI_BLUE, env->cwd, ANSI_RESET, ANSI_GREEN, env->user, ANSI_RESET);
+        char* prompt = clib_str_format("%s%s%s | %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
 
         if (interrupted) {
             memset(input, 0, sizeof(input));
@@ -39,7 +41,7 @@ void loop(){
             continue;
         }
 
-        ui_prompt(prompt, input);
+        ui_prompt(env, prompt, input);
         free(prompt);
 
         if (interrupted) {
@@ -53,10 +55,8 @@ void loop(){
 
         env->last_tokens = tokens;
         env->tokens_count = count;
-        print_tokens(env->last_tokens, count);
 
         // Reset input
-        memset(input, 0, sizeof(input));
 
         if(count <= 0) continue;
 
@@ -65,12 +65,17 @@ void loop(){
             env->last_tokens[--env->tokens_count] = NULL;
         }
 
+        if (count > 0){
+            history_add(env->history, input);
+        }
+
         if (is_builtin(env->last_tokens[0])) {
             exec_builtin(env);
         } else {
             fork_process(env->last_tokens, count, bg);
         }
 
+        memset(input, 0, sizeof(input));
         free_tokens(&env->last_tokens, count);
     }
 
@@ -114,6 +119,8 @@ int main(int argc, char** argv) {
     free(opts);
     free(fmt);
     clib_cli_clean_arguments(&args);
+
+    history_setup_file();
 
     loop();
 

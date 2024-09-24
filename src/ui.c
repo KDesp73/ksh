@@ -53,15 +53,18 @@ void delete_character(char input[], int pos, int length) {
     input[length - 1] = '\0'; 
 }
 
-void ui_prompt(const char* prompt, char input[]) {
+void ui_prompt(env_t* env, const char* prompt, char input[]) 
+{
     int pos = 0;
     int len = 0;
+    int history_index = env->history->count;
 
     printf("%s", prompt);
     fflush(stdout);
 
     char c;
     do {
+        // TODO: doesn't work as intended
         if (interrupted) {
             INFO("Ctrl+C");
             input[0] = '\0'; // Clear the input
@@ -86,9 +89,18 @@ void ui_prompt(const char* prompt, char input[]) {
                 move_right(1);
             }
         } else if (c == CLIB_KEY_ARROW_UP) {
-            // TODO: loop history
+            history_index = clamp(history_index-1, 0, env->history->count);
+            strcpy(input, env->history->commands[history_index]); 
+            len = strlen(input);
         } else if (c == CLIB_KEY_ARROW_DOWN) {
-            // TODO: loop history
+            history_index = clamp(history_index+1, 0, env->history->count);
+            if(history_index == env->history->count)
+                strcpy(input, ""); 
+            else{
+                strcpy(input, env->history->commands[history_index]); 
+                len = strlen(input);
+                pos = len;
+            }
         } else if (c == CTRL_KEY('l')) {
             system("clear");
         } else if (c >= 32 && c < 127 && len < MAX_INPUT_LENGTH - 1) {
