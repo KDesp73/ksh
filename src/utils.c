@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "tokenizer.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include <ctype.h>
@@ -105,67 +106,27 @@ char* extract_content(const char* str)
     return strdup(str); // Return a copy of the original string
 }
 
-char** insert_char_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count) 
+char** insert_char_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count)
 {
-    // Check if the index is valid
-    if (index > dest_count) {
-        return NULL; // Invalid index
-    }
-
-    // Calculate the new total count
-    *new_count = dest_count + src_count;
-
-    // Allocate memory for the new array
-    char** new_array = (char**)malloc((*new_count) * sizeof(char*));
-    if (!new_array) {
-        return NULL; // Memory allocation failed
-    }
-
-    // Copy elements from dest up to the index
+    *new_count = dest_count + src_count - 1;
+    char** new_array = malloc((*new_count) * sizeof(char*));
+    
+    if (!new_array) return NULL;
+    
     for (size_t i = 0; i < index; i++) {
-        new_array[i] = strdup(dest[i]); // Duplicate the string
-        if (!new_array[i]) {
-            // Free previously allocated memory in case of failure
-            for (size_t j = 0; j < i; j++) {
-                free(new_array[j]);
-            }
-            free(new_array);
-            return NULL;
-        }
+        new_array[i] = strdup(dest[i]);
     }
 
-    // Insert elements from src
     for (size_t i = 0; i < src_count; i++) {
-        new_array[index + i] = strdup(src[i]); // Duplicate the string
-        if (!new_array[index + i]) {
-            // Free previously allocated memory in case of failure
-            for (size_t j = 0; j < index + i; j++) {
-                free(new_array[j]);
-            }
-            free(new_array);
-            return NULL;
-        }
+        new_array[index + i] = strdup(src[i]);
     }
 
-    // Copy remaining elements from dest after the index
-    for (size_t i = index; i < dest_count; i++) {
-        new_array[i + src_count] = strdup(dest[i]); // Duplicate the string
-        if (!new_array[i + src_count]) {
-            // Free previously allocated memory in case of failure
-            for (size_t j = 0; j < (*new_count); j++) {
-                free(new_array[j]);
-            }
-            free(new_array);
-            return NULL;
-        }
+    for (size_t i = index + 1; i < dest_count; i++) {
+        new_array[i + src_count - 1] = strdup(dest[i]);
     }
 
-    // Free the original dest array
-    for (size_t i = 0; i < dest_count; i++) {
-        free(dest[i]);
-    }
-    free(dest);
-
+    free_tokens(dest, dest_count);
+    
     return new_array;
 }
 

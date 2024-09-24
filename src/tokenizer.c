@@ -187,25 +187,83 @@ char** replace_env(char** tokens, size_t count)
     return replace_env(tokens, count);
 }
 
+#define MAX_ALIASES 100
+
+int alias_in_seen(char** seen_aliases, size_t seen_count, const char* alias) {
+    for (size_t i = 0; i < seen_count; i++) {
+        if (strcmp(seen_aliases[i], alias) == 0) {
+            return 1; // Alias is already in the seen list
+        }
+    }
+    return 0; // Alias not found in the seen list
+}
+
+int add_alias_to_seen(char** seen_aliases, size_t* seen_count, const char* alias) {
+    if (*seen_count >= MAX_ALIASES) return 0;
+    seen_aliases[*seen_count] = strdup(alias);
+    (*seen_count)++;
+    return 1; // Successfully added
+}
+
+char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, char** seen_aliases, size_t* seen_count);
 char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
 {
-    if (table == NULL) return tokens;
+    char* seen_aliases[MAX_ALIASES] = {0};
+    size_t seen_count = 0;
 
-    int change_occured = 0;
-    for(size_t i = 0; i < *count; ++i){
+    char** ret = replace_aliases_rec(table, tokens, count, seen_aliases, &seen_count);
+
+    ret = realloc(ret, (*count + 1) * sizeof(char*));
+    if (ret != NULL) {
+        ret[*count] = NULL; // Add a NULL element at the end
+    }
+
+    return ret;
+}
+
+char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, char** seen_aliases, size_t* seen_count)
+{
+    if (table == NULL || tokens == NULL) return tokens;
+
+    int change_occurred = 0;
+    for (size_t i = 0; i < *count; ++i) {
         char* token = tokens[i];
         if (token == NULL) continue;
 
+        if (alias_in_seen(seen_aliases, *seen_count, token)) {
+            continue;
+        }
+
+        if (!add_alias_to_seen(seen_aliases, seen_count, token)) {
+            continue;
+        }
+
         char* val = alias_find(table, token);
-        if(val != NULL) {
-            tokens[i] = val;
-            change_occured = 1;
+        if (val != NULL) {
+            size_t alias_tokens_count;
+            char** alias_tokens = tokenize(val, &alias_tokens_count);
+            if (alias_tokens == NULL) {
+                continue;
+            }
+
+            size_t new_count;
+            char** new_tokens = insert_char_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
+            if (new_tokens == NULL) {
+                free_tokens(alias_tokens, alias_tokens_count);
+                continue;
+            }
+
+            tokens = new_tokens;
+            *count = new_count;
+            change_occurred = 1;
+
+            free_tokens(alias_tokens, alias_tokens_count);
         }
     }
 
-    if(!change_occured) return tokens;
+    if (!change_occurred) return tokens;
 
-    return replace_aliases(table, tokens, count);
+    return replace_aliases_rec(table, tokens, count, seen_aliases, seen_count);
 }
 
 char* tokens_to_string(char** tokens, size_t count)
