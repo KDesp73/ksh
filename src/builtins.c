@@ -1,5 +1,7 @@
 #include "builtins.h"
+#include "alias.h"
 #include "history.h"
+#include "pair.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,10 +51,27 @@ int exec_builtin(env_t* env)
         print_builtins();
     } else if(STREQ("history", command)) {
         history(env->history);
+    } else if(STREQ("export", command)) {
+        export(env->last_tokens[1]);
+    } else if(STREQ("alias", command)) {
+        int pair_index = 1;
+        if(STREQ(env->last_tokens[1], "-p")) {
+            aliases_print(env->aliases);
+            pair_index++;
+        }
+
+        if(env->tokens_count > 2) {
+            key_value_pair_t pair = key_value_parse(env->last_tokens[pair_index]);
+            alias_add(env->aliases, pair.key, pair.value);
+            key_value_free(&pair);
+        }
+    } else if(STREQ("unalias", command)) {
+        alias_remove(env->aliases, env->last_tokens[1]);
     }
 
     return 0;
 }
+
 
 void history(const history_t* history)
 {
@@ -110,6 +129,18 @@ char* cd(const char* path)
     }
 
     return NULL;
+}
+
+// KEY=VALUE
+void export(const char* keyvalue)
+{
+    char * p = strdup(keyvalue);
+    if (putenv(p)) {
+        free(p);
+        if (errno == ENOMEM)
+            exit(1);
+        puts("export: missing '='"); // errno == EINVAL
+    }
 }
 
 // TODO:

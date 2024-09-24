@@ -1,4 +1,5 @@
 #include "env.h"
+#include "alias.h"
 #include "history.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
@@ -12,6 +13,7 @@ env_t* get_env()
     result->user = getlogin();
     result->home = getenv("HOME");
     result->history = history_load();
+    result->aliases = alias_create_table();
 
     return result;
 }

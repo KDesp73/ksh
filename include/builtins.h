@@ -11,11 +11,14 @@ static char* builtins[] = {
     "exit", "quit",
     "clear",
     "history",
+    "export",
+    "alias", "unalias"
 };
 
 char* cd(const char* path);
 void echo(char **tokens, size_t count);
 void history(const history_t* history);
+void export(const char* keyvalue);
 
 int exec_builtin(env_t* env);
 int is_builtin(const char* command);
