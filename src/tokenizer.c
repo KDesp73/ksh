@@ -8,14 +8,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-void free_tokens(char*** tokens, size_t count)
+void free_tokens(char** tokens, size_t count)
 {
-    if(*tokens == NULL) return;
+    if (!tokens) return; // Protect against NULL pointer
+
     for (size_t i = 0; i < count; i++) {
-        if ((*tokens)[i] != NULL)
-            free((*tokens)[i]);
+        if (tokens[i]) {
+            free(tokens[i]);
+        }
     }
-    free(*tokens);
+    free(tokens);
 }
 
 
@@ -26,12 +28,6 @@ int search(const char* str, char c){
     return 0;
 }
 
-// Expected outputs:
-// "a b c d" -> [a, b, c, d]
-// "a b "c d"" -> [a,b, c d]
-// "a b=c" -> [a, b=c]
-// "a b="c"" -> [a, b="c"]
-// "a b="c d"" -> [a, b="c d"]
 
 char** tokenize(const char* input, size_t *count) 
 {
@@ -133,6 +129,12 @@ char** tokenize(const char* input, size_t *count)
 }
 
 
+// Expected outputs:
+// "a b c d" -> [a, b, c, d]
+// "a b "c d"" -> [a,b, c d]
+// "a b=c" -> [a, b=c]
+// "a b="c"" -> [a, b="c"]
+// "a b="c d"" -> [a, b="c d"]
 int test_tokenize()
 {
     char* io[][2] = {
@@ -143,6 +145,7 @@ int test_tokenize()
         {"a b='c d'", "[a, b='c d']"},
         {"alias la='ls -a'", "[alias, la='ls -a']"},
         {"alias ls='ls --color=auto'", "[alias, ls='ls --color=auto']"},
+        {"ls --color=auto", "[ls, --color=auto]"},
     };
 
     int passed = 1;
@@ -159,7 +162,7 @@ int test_tokenize()
             printf("%spassed%s '%s'\n", ANSI_GREEN, ANSI_RESET, io[i][0]);
         }
         free(tokens_str);
-        free_tokens(&tokens, count);
+        // free_tokens(tokens, count);
     }
     return passed;
 }

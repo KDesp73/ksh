@@ -39,9 +39,7 @@ int interpret(env_t* env, char* input, int histincl)
     }
 
     memset((char*) input, 0, sizeof(input));
-    if(env->last_tokens != NULL){
-        free_tokens(&env->last_tokens, count);
-    }
+    // free_tokens(env->last_tokens, count);
 
     return SHELL_SUCCESS;
 }

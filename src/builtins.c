@@ -247,7 +247,6 @@ void source(env_t *env, const char* file)
 {
     size_t line_count;
     char** lines = read_non_empty_lines(file, &line_count);
-    INFO("lines: %zu", line_count);
 
     for(size_t i = 0; i < line_count; i++){
         if (lines[i] == NULL) continue;
