@@ -10,11 +10,23 @@
 
 
 void move_right(int i) {
-    printf("\033[%dC", i);
+    if (i < 1) return;
+
+    if (i == 1){
+        printf("\033[C");
+    } else {
+        printf("\033[%dC", i);
+    }
 }
 
 void move_left(int i) {
-    printf("\033[%dD", i);
+    if (i < 1) return;
+
+    if (i == 1){
+        printf("\033[D");
+    } else {
+        printf("\033[%dD", i);
+    }
 }
 
 int clamp(int num, int min, int max){
@@ -76,19 +88,20 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 len--;
             }
         } else if (c == CLIB_KEY_ARROW_LEFT) {
-            pos = clamp(pos - 1, 0, len);
-            if (pos > 0) {
+            if (pos > 0) { 
+                pos--;
                 move_left(1);
             }
         } else if (c == CLIB_KEY_ARROW_RIGHT) {
-            pos = clamp(pos + 1, 0, len);
-            if (pos < len) {
+            if (pos < len) { 
+                pos++;
                 move_right(1);
             }
         } else if (c == CLIB_KEY_ARROW_UP) {
             history_index = clamp(history_index-1, 0, env->history->count);
             strcpy(input, env->history->commands[history_index]); 
-            len = strlen(input);
+            pos = len = strlen(input);
+            move_right(pos);
         } else if (c == CLIB_KEY_ARROW_DOWN) {
             history_index = clamp(history_index+1, 0, env->history->count);
             if(history_index == env->history->count){
@@ -97,9 +110,12 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             } else {
                 strcpy(input, env->history->commands[history_index]); 
                 pos = len = strlen(input);
+                move_right(pos);
             }
         } else if (c == CTRL_KEY('l')) {
             system("clear");
+            printf("%s%s", prompt, input);
+            move_right(pos);
         } else if (c >= 32 && c < 127 && len < MAX_INPUT_LENGTH - 1) {
             insert_character(input, c, pos, len);
             pos++;

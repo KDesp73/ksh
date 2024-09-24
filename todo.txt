@@ -1,4 +1,5 @@
 TODO: ctrl+c work properly
 TODO: move cursor with arrows
-TODO: when scrolling history put cursor in the end
 TODO: multiword aliased dont work
+TODO: free_tokens causes segfault occasionally
+DONE: when scrolling history put cursor in the end
