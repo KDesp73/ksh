@@ -2,4 +2,8 @@ TODO: ctrl+c work properly
 TODO: move cursor with arrows
 TODO: multiword aliased dont work
 TODO: free_tokens causes segfault occasionally
+TODO: pipes
+TODO: redirects < >
+TODO: full scripting support
+TODO: all bash builtins along with their options
 DONE: when scrolling history put cursor in the end

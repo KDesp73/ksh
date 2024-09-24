@@ -90,15 +90,17 @@ int main(int argc, char** argv) {
     clib_cli_clean_arguments(&args);
 
     history_setup_file();
-    char* src_file = KSHRC_FILE;
-    create_file(src_file);
-    free(src_file);
 
     env_t* env = get_env();
 
     system("clear");
 
-    source(env, KSHRC_FILE);
+    char* src_file = KSHRC_FILE;
+    if(clib_file_exists(src_file)){
+        source(env, src_file);
+    }
+    free(src_file);
+
     loop(env);
 
     free_env(&env);

@@ -22,10 +22,20 @@ alias_table_t* alias_create_table()
 
 void alias_add(alias_table_t* table, const char* name, const char* command)
 {
-    // Reallocate if needed
+    for (size_t i = 0; i < table->count; i++) {
+        if (strcmp(table->aliases[i].name, name) == 0) {
+            free(table->aliases[i].command);
+            table->aliases[i].command = strdup(command);
+            return;
+        }
+    }
+
     if (table->count >= table->capacity) {
         table->capacity *= 2;
         table->aliases = (alias_t*)realloc(table->aliases, table->capacity * sizeof(alias_t));
+        if (!table->aliases) {
+            return;
+        }
     }
 
     table->aliases[table->count].name = strdup(name);
