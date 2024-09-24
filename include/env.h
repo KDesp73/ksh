@@ -4,8 +4,9 @@
 #include "alias.h"
 #include "history.h"
 #include <stdio.h>
-#define MAX_INPUT_LENGTH 1024
 
+#define SHELL_SUCCESS 0
+#define MAX_INPUT_LENGTH 1024
 #define REPLACE_HOME(path) \
     clib_str_replace(path, getenv("HOME"), "~")
 

@@ -8,11 +8,14 @@ static char* builtins[] = {
     "builtins",
     "cd",
     "echo",
-    "exit", "quit",
+    "exit",
     "clear",
     "history",
     "export",
-    "alias", "unalias"
+    "alias", "unalias",
+#ifdef DEBUG
+    "test_tokenizer",
+#endif // DEBUG
 };
 
 char* cd(const char* path);

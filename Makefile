@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude -ggdb
+CFLAGS = -Wall -Iinclude -ggdb -DDEBUG
 LDFLAGS =
 
 SRC_DIR = src

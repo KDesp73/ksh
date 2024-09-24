@@ -5,6 +5,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+void fork_process_command(char* command, int bg)
+{
+    size_t count;
+    char** tokens = tokenize(command, &count);
+    fork_process(tokens, count, bg);
+}
+
 void fork_process(char** tokens, size_t count, int bg) 
 {
     pid_t pid = fork();

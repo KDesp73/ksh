@@ -9,6 +9,7 @@
 #include "builtins.h"
 #include "env.h"
 #include "history.h"
+#include "interpreter.h"
 #include "processes.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
@@ -32,7 +33,6 @@ void loop(){
     system("clear");
     for(;;) {
         interrupted = 0;
-        int bg = 0;
         char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
 
         if (interrupted) {
@@ -49,34 +49,7 @@ void loop(){
             continue;
         }
 
-        size_t count;
-        char** tokens = tokenize(input, &count);
-        tokens = replace_env(tokens, count);
-
-        env->last_tokens = tokens;
-        env->tokens_count = count;
-
-        // Reset input
-
-        if(count <= 0) continue;
-
-        if (STREQ("&", env->last_tokens[count-1])) {
-            bg = 1;
-            env->last_tokens[--env->tokens_count] = NULL;
-        }
-
-        if (count > 0){
-            history_add(env->history, input);
-        }
-
-        if (is_builtin(env->last_tokens[0])) {
-            exec_builtin(env);
-        } else {
-            fork_process(env->last_tokens, count, bg);
-        }
-
-        memset(input, 0, sizeof(input));
-        free_tokens(&env->last_tokens, count);
+        if(interpret(env, input) != SHELL_SUCCESS) continue;
     }
 
     free_env(&env);

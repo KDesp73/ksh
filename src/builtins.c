@@ -1,7 +1,10 @@
 #include "builtins.h"
 #include "alias.h"
 #include "history.h"
+#include "interpreter.h"
 #include "pair.h"
+#include "processes.h"
+#include "tokenizer.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +41,7 @@ int exec_builtin(env_t* env)
         env->cwd = REPLACE_HOME(path);
     } else if(STREQ("echo", command)) {
         echo(env->last_tokens, env->tokens_count);
-    } else if(STREQ("exit", command) || STREQ("quit", command)) {
+    } else if(STREQ("exit", command)) {
         if (env->tokens_count == 1)
             exit(0);
         else {
@@ -60,14 +63,17 @@ int exec_builtin(env_t* env)
             pair_index++;
         }
 
-        if(env->tokens_count > 2) {
-            key_value_pair_t pair = key_value_parse(env->last_tokens[pair_index]);
-            alias_add(env->aliases, pair.key, pair.value);
-            key_value_free(&pair);
-        }
+        if(env->tokens_count == 2 && STREQ(env->last_tokens[1], "-p")) return 0;
+
+        key_value_pair_t pair = key_value_parse(env->last_tokens[pair_index]);
+        if (pair.key == NULL || pair.value == NULL) return -1;
+        alias_add(env->aliases, pair.key, pair.value);
+        key_value_free(&pair);
     } else if(STREQ("unalias", command)) {
         alias_remove(env->aliases, env->last_tokens[1]);
-    }
+    } else if(STREQ("test_tokenizer", command)){
+        test_tokenize();
+    } 
 
     return 0;
 }
