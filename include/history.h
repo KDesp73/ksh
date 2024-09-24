@@ -15,5 +15,6 @@ void history_clear(history_t* history);
 char* history_to_string(const history_t* history);
 history_t* history_load();
 void history_setup_file();
+void history_free(history_t** history);
 
 #endif // HISTORY_H

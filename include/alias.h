@@ -20,5 +20,6 @@ char* alias_find(alias_table_t* table, const char* name);
 void alias_remove(alias_table_t* table, const char* name);
 void alias_add(alias_table_t* table, const char* name, const char* command);
 void aliases_print(alias_table_t* table);
+void aliases_free(alias_table_t** table);
 
 #endif // ALIAS_H
