@@ -213,8 +213,11 @@ char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
     size_t seen_count = 0;
 
     char** ret = replace_aliases_rec(table, tokens, count, seen_aliases, &seen_count);
+#ifdef DEBUG
+    printf("seen: ");print_tokens(seen_aliases, seen_count);
+#endif // DEBUG
 
-    if (ret) {
+    if (seen_count != 0 && ret) {
         char** new_ret = realloc(ret, (*count + 1) * sizeof(char*));
         if (new_ret) {
             new_ret[*count] = NULL; // Add NULL at the end
@@ -224,7 +227,7 @@ char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
         }
     }
 
-    return NULL;
+    return ret;
 }
 
 char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, char** seen_aliases, size_t* seen_count)
@@ -236,17 +239,18 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
         char* token = tokens[i];
         if (token == NULL) continue;
 
-        if (alias_in_seen(seen_aliases, *seen_count, token)) {
-            continue;
-        }
-
-        if (!add_alias_to_seen(seen_aliases, seen_count, token)) {
-            // Couldn't add to seen
-            continue;
-        }
 
         char* val = alias_find(table, token);
         if (val != NULL) {
+            if (alias_in_seen(seen_aliases, *seen_count, token)) {
+                continue;
+            }
+
+            if (!add_alias_to_seen(seen_aliases, seen_count, token)) {
+                // Couldn't add to seen
+                continue;
+            }
+
             size_t alias_tokens_count;
             char** alias_tokens = tokenize(val, &alias_tokens_count);
             if (alias_tokens == NULL) {
@@ -259,7 +263,11 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
             } else {
                 size_t new_count;
                 char** new_tokens = replace_item_with_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
+
+#ifdef DEBUG
                 printf("new tokens: ");print_tokens(new_tokens, new_count);
+#endif // DEBUG
+       
                 if (new_tokens == NULL) {
                     free_tokens(alias_tokens, alias_tokens_count);
                     continue;

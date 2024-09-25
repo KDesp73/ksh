@@ -1,10 +1,14 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude -ggdb -DDEBUG
+CFLAGS = -Wall -Iinclude
 LDFLAGS =
 
 SRC_DIR = src
 INCLUDE_DIR = include
 BUILD_DIR = build
+
+ifneq ($(type), RELEASE)
+	CFLAGS += -DDEBUG -ggdb
+endif
 
 # List all the source files
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
@@ -20,20 +24,25 @@ all: $(BUILD_DIR) $(TARGET)
 
 # Rule to create the build directory
 $(BUILD_DIR):
+	@echo "Creating build directory"
 	mkdir -p $(BUILD_DIR)
 
 # Rule to build the executable
 $(TARGET): $(OBJ_FILES)
+	@echo "Building the shell"
 	$(CC) -o $@ $^ $(LDFLAGS)
+
 
 # Rule to build object files from source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-install: $(TARGET)
+install: all
+	@echo "Installing..."
 	cp $(TARGET) /usr/bin/$(TARGET)
 
 uninstall:
+	@echo "Uninstalling..."
 	rm /usr/bin/$(TARGET)
 
 # Clean rule to remove generated files
