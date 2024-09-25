@@ -213,11 +213,8 @@ char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
     size_t seen_count = 0;
 
     char** ret = replace_aliases_rec(table, tokens, count, seen_aliases, &seen_count);
-#ifdef DEBUG
-    printf("seen: ");print_tokens(seen_aliases, seen_count);
-#endif // DEBUG
 
-    if (seen_count != 0 && ret) {
+    if (seen_count > 0 && ret) {
         char** new_ret = realloc(ret, (*count + 1) * sizeof(char*));
         if (new_ret) {
             new_ret[*count] = NULL; // Add NULL at the end
@@ -235,7 +232,10 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
     if (table == NULL || tokens == NULL) return tokens;
 
     int change_occurred = 0;
-    for (size_t i = 0; i < *count; ++i) {
+    
+    // TODO: remove for loop completely once certain
+    //       that its not useful in any way
+    for (size_t i = 0; i < 1; ++i) { // Run once (Replace alias only for the first token) 
         char* token = tokens[i];
         if (token == NULL) continue;
 
