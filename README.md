@@ -2,6 +2,9 @@
 
 My shell
 
+![2024-09-26-015853_hyprshot](https://github.com/user-attachments/assets/073b27b0-b28f-4a8e-b8c3-2bc4577354e5)
+
+
 ## Features
 
 - Exports
