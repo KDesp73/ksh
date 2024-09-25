@@ -23,9 +23,9 @@ void free_tokens(char** tokens, size_t count)
 
 int search(const char* str, char c){
     for(size_t i = 0; i < strlen(str); i++){
-        if (c == str[i]) return 1;
+        if (c == str[i]) return i;
     }
-    return 0;
+    return -1;
 }
 
 
@@ -171,11 +171,12 @@ char** replace_env(char** tokens, size_t count)
 {
     int change_occured = 0;
     for(size_t i = 0; i < count; ++i){
-        if(search(tokens[i], '~')) {
+        if(search(tokens[i], '~') != -1) {
             tokens[i] = REPLACE_TILDA_WITH_HOME(tokens[i]);
             change_occured = 1;
         }
-        if (search(tokens[i], '$')){
+    int index = search(tokens[i], '$');
+        if (index != - 1 && tokens[i][index+1] != '(' && tokens[i][index+1] != ' '){ // don't consider $() or $ an environment variable
             tokens[i] = extract_content(tokens[i]);
             tokens[i] = replace_variable_with_env(tokens[i]);
             change_occured = 1;

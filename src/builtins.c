@@ -100,6 +100,7 @@ char* cd(const char* path)
     char* temp = NULL;
     if (path != NULL){
         path = clib_str_replace(path, "~", getenv("HOME"));
+        path = extract_content(path);
     }
 
     if (path == NULL) {
@@ -149,13 +150,18 @@ char* cd(const char* path)
 // KEY=VALUE
 void export(const char* keyvalue)
 {
-    char * p = strdup(keyvalue);
-    if (putenv(p)) {
-        free(p);
-        if (errno == ENOMEM)
+    key_value_pair_t pair = key_value_parse(keyvalue);
+    char* value = extract_content(pair.value);
+    if (setenv(pair.key, value, 1)) {
+        if (errno == ENOMEM){
+            free(value);
+            key_value_free(&pair);
             exit(1);
+        }
         puts("export: missing '='"); // errno == EINVAL
     }
+    free(value);
+    key_value_free(&pair);
 }
 
 
