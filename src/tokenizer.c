@@ -265,10 +265,6 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
                 size_t new_count;
                 char** new_tokens = replace_item_with_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
 
-#ifdef DEBUG
-                printf("new tokens: ");print_tokens(new_tokens, new_count);
-#endif // DEBUG
-       
                 if (new_tokens == NULL) {
                     free_tokens(alias_tokens, alias_tokens_count);
                     continue;

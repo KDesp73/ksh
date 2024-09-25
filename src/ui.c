@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "utils.h"
 #include <unistd.h>
 #define CLIB_MENUS
 #define CLIB_IMPLEMENTATION
@@ -65,6 +66,8 @@ void delete_character(char input[], int pos, int length) {
 void ui_prompt(env_t* env, const char* prompt, char input[]) 
 {
     clib_disable_input_buffering();
+    printf("\033[?25h");
+
     int pos = 0;
     int len = 0;
     int history_index = env->history->count;
@@ -74,7 +77,6 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
 
     char c;
     do {
-        // TODO: doesn't work as intended
         if (interrupted) {
             printf("\r\033[K");
             input[0] = '\0'; // Clear the input
@@ -127,7 +129,9 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
 
         // Clear the line and redraw the prompt and input
         printf("\r\033[K%s%s", prompt, input);
-        
+        printf("\033[%dG", (int)(visible_length(prompt) + pos + 1));        
+        printf("\033[?25h");
+
         fflush(stdout);
     } while (c != CLIB_KEY_ENTER);
 

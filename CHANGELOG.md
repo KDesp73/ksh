@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Cursor moving within the input
+- Ctrl+C working properly
 - Added source builtin
 - Introduced .kshrc file
 - Added cli options

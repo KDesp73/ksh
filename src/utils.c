@@ -7,6 +7,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+int visible_length(const char* str)
+{
+    int length = 0;
+    int in_escape = 0;
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '\033') {
+            in_escape = 1; // Start of escape sequence
+        } else if (in_escape && str[i] == 'm') {
+            in_escape = 0; // End of escape sequence
+        } else if (!in_escape) {
+            length++; // Count only visible characters
+        }
+    }
+
+    return length;
+}
+
 char* replace_variable_with_env(const char* input) {
     const char* dollar = strchr(input, '$'); // Find the first '$'
     if (!dollar) {
