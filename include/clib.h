@@ -1281,10 +1281,15 @@ CLIBAPI void* clib_safe_calloc(size_t nmemb, size_t size) {
 }
 
 CLIBAPI void* clib_safe_realloc(void *ptr, size_t size) {
+    if (size < 1) {
+        fprintf(stderr, "Invalid size");
+        return NULL;
+    }
+
     void *new_ptr = realloc(ptr, size);
     if (new_ptr == NULL) {
         fprintf(stderr, "Memory reallocation error\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     return new_ptr;
 }

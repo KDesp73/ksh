@@ -106,27 +106,66 @@ char* extract_content(const char* str)
     return strdup(str); // Return a copy of the original string
 }
 
-char** insert_char_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count)
+char** insert_char_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count) 
 {
-    *new_count = dest_count + src_count - 1;
-    char** new_array = malloc((*new_count) * sizeof(char*));
-    
-    if (!new_array) return NULL;
-    
+    if (index >= dest_count) {
+        return NULL; // Invalid index
+    }
+
+    // Calculate the new count: dest_count - 1 (we're removing one element) + src_count (we're adding src)
+    *new_count = dest_count - 1 + src_count;
+
+    // Allocate memory for the new array, adding space for src tokens
+    char** new_array = (char**)malloc((*new_count + 1) * sizeof(char*)); // +1 for NULL termination
+    if (!new_array) {
+        return NULL; // Memory allocation failed
+    }
+
+    // Copy elements from dest up to the index (before the replacement)
     for (size_t i = 0; i < index; i++) {
-        new_array[i] = strdup(dest[i]);
+        new_array[i] = strdup(dest[i]); 
+        if (!new_array[i]) {
+            for (size_t j = 0; j < i; j++) {
+                free(new_array[j]);
+            }
+            free(new_array);
+            return NULL;
+        }
     }
 
+    // Insert elements from src at the index
     for (size_t i = 0; i < src_count; i++) {
-        new_array[index + i] = strdup(src[i]);
+        new_array[index + i] = strdup(src[i]); 
+        if (!new_array[index + i]) {
+            for (size_t j = 0; j < index + i; j++) {
+                free(new_array[j]);
+            }
+            free(new_array);
+            return NULL;
+        }
     }
 
+    // Copy the remaining elements from dest after the index (skipping the replaced token)
     for (size_t i = index + 1; i < dest_count; i++) {
-        new_array[i + src_count - 1] = strdup(dest[i]);
+        new_array[i - 1 + src_count] = strdup(dest[i]); // Shift to accommodate new tokens from src
+        if (!new_array[i - 1 + src_count]) {
+            for (size_t j = 0; j < (*new_count); j++) {
+                free(new_array[j]);
+            }
+            free(new_array);
+            return NULL;
+        }
     }
 
-    free_tokens(dest, dest_count);
-    
+    // Free the original dest array
+    for (size_t i = 0; i < dest_count; i++) {
+        free(dest[i]);
+    }
+    free(dest);
+
+    // Null-terminate the new array
+    new_array[*new_count] = NULL;
+
     return new_array;
 }
 

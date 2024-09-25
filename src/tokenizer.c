@@ -208,14 +208,20 @@ int add_alias_to_seen(char** seen_aliases, size_t* seen_count, const char* alias
 char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, char** seen_aliases, size_t* seen_count);
 char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
 {
+    // Used to stop infinite recursion when an alias references itself
     char* seen_aliases[MAX_ALIASES] = {0};
     size_t seen_count = 0;
 
     char** ret = replace_aliases_rec(table, tokens, count, seen_aliases, &seen_count);
 
-    ret = realloc(ret, (*count + 1) * sizeof(char*));
-    if (ret != NULL) {
-        ret[*count] = NULL; // Add a NULL element at the end
+    if (ret) {
+        char** new_ret = realloc(ret, (*count + 1) * sizeof(char*));
+        if (new_ret) {
+            new_ret[*count] = NULL; // Add NULL at the end
+            return new_ret;
+        } else {
+            return ret;
+        }
     }
 
     return ret;
@@ -235,6 +241,7 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
         }
 
         if (!add_alias_to_seen(seen_aliases, seen_count, token)) {
+            // Couldn't add to seen
             continue;
         }
 
@@ -246,17 +253,23 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
                 continue;
             }
 
-            size_t new_count;
-            char** new_tokens = insert_char_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
-            if (new_tokens == NULL) {
-                free_tokens(alias_tokens, alias_tokens_count);
-                continue;
+            if (alias_tokens_count == 1) {
+                free(tokens[i]);
+                // tokens[i] = strdup(alias_tokens[0]); 
+            } else {
+                size_t new_count;
+                char** new_tokens = insert_char_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
+                printf("New tokens: ");print_tokens(new_tokens, new_count);
+                if (new_tokens == NULL) {
+                    free_tokens(alias_tokens, alias_tokens_count);
+                    continue;
+                }
+                tokens = new_tokens;
+                *count = new_count;
+                i += alias_tokens_count - 1; // Adjust the index to skip over the newly inserted tokens
             }
 
-            tokens = new_tokens;
-            *count = new_count;
             change_occurred = 1;
-
             free_tokens(alias_tokens, alias_tokens_count);
         }
     }
@@ -272,6 +285,7 @@ char* tokens_to_string(char** tokens, size_t count)
 
     clib_str_append(&buffer, "[");
     for(size_t i = 0; i < count; ++i){
+        if(tokens[i] == NULL) continue;
         char* token;
         if(i == count-1){
             token = clib_str_format("%s", tokens[i]);

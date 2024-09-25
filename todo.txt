@@ -6,5 +6,6 @@ TODO: redirects < >
 TODO: full scripting support
 TODO: all bash builtins along with their options
 TODO: implement $()
+TODO: custom autocomplete
 DONE: when scrolling history put cursor in the end
 DONE: multiword aliased dont work
