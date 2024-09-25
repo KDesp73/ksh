@@ -36,6 +36,8 @@ void loop(env_t* env)
         if (interrupted) {
             memset(input, 0, sizeof(input));
             free(prompt);
+            free(bold_blue);
+            free(bold_green);
             continue;
         }
 

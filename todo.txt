@@ -9,5 +9,6 @@ TODO: implement $()
 TODO: custom autocomplete
 TODO: change prompt using $PROMPT
 TODO: prompt customize language
+TODO: plugin support
 DONE: when scrolling history put cursor in the end
 DONE: multiword aliased dont work

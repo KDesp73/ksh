@@ -220,11 +220,11 @@ char** replace_aliases(alias_table_t* table, char** tokens, size_t* count)
             new_ret[*count] = NULL; // Add NULL at the end
             return new_ret;
         } else {
-            return ret;
+            return NULL;
         }
     }
 
-    return ret;
+    return NULL;
 }
 
 char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, char** seen_aliases, size_t* seen_count)
@@ -255,10 +255,11 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
 
             if (alias_tokens_count == 1) {
                 free(tokens[i]);
-                // tokens[i] = strdup(alias_tokens[0]); 
+                tokens[i] = strdup(alias_tokens[0]); 
             } else {
                 size_t new_count;
                 char** new_tokens = replace_item_with_array(tokens, *count, alias_tokens, alias_tokens_count, i, &new_count);
+                printf("new tokens: ");print_tokens(new_tokens, new_count);
                 if (new_tokens == NULL) {
                     free_tokens(alias_tokens, alias_tokens_count);
                     continue;

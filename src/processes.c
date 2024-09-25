@@ -8,14 +8,18 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int fork_process_command(char* command, int bg)
+int fork_process_command(char* command, int bg, char** output)
 {
     size_t count;
     char** tokens = tokenize(command, &count);
-    return fork_process(tokens, count, bg);
+    return fork_process(tokens, count, bg, output);
 }
 
-int fork_process(char** tokens, size_t count, int bg) 
+
+#define SHELL_SUCCESS 0
+#define SHELL_ERROR -1
+
+int fork_process(char** tokens, size_t count, int bg, char** output) 
 {
     pid_t pid = fork();
 
