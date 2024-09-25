@@ -64,6 +64,7 @@ void delete_character(char input[], int pos, int length) {
 
 void ui_prompt(env_t* env, const char* prompt, char input[]) 
 {
+    clib_disable_input_buffering();
     int pos = 0;
     int len = 0;
     int history_index = env->history->count;
@@ -75,8 +76,10 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
     do {
         // TODO: doesn't work as intended
         if (interrupted) {
-            INFO("Ctrl+C");
+            printf("\r\033[K");
             input[0] = '\0'; // Clear the input
+            clib_enable_input_buffering();
+            interrupted = 0;
             return;
         }
         c = clib_getch();
@@ -130,4 +133,6 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
 
     input[len] = '\0'; // Null-terminate the input
     printf("\n"); // Move to the next line after input is finished
+
+    clib_enable_input_buffering();
 }

@@ -22,7 +22,6 @@ void handle_sigint(int sig)
 {
     interrupted = 1;
     printf("\n");
-    fflush(stdout);
 }
 
 void loop(env_t* env)
@@ -55,9 +54,18 @@ void loop(env_t* env)
     }
 }
 
+void setup_sigint_handler() {
+    struct sigaction sa;
+    sa.sa_handler = &handle_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    sigaction(SIGINT, &sa, NULL);
+}
+
 int main(int argc, char** argv)
 {
-    signal(SIGINT, handle_sigint);
+    setup_sigint_handler();
 
     CliArguments args = clib_cli_make_arguments(2, 
         clib_cli_create_argument('h', "help", "", no_argument),

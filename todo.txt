@@ -1,4 +1,3 @@
-TODO: ctrl+c work properly
 TODO: move cursor with arrows
 TODO: free_tokens causes segfault occasionally
 TODO: pipes
@@ -12,3 +11,4 @@ TODO: prompt customize language
 TODO: plugin support
 DONE: when scrolling history put cursor in the end
 DONE: multiword aliased dont work
+DONE: ctrl+c work properly
