@@ -19,7 +19,7 @@ int interpret(env_t* env, char* input, int histincl)
     tokens = replace_aliases(env->aliases, tokens, &count);
 
 #ifdef DEBUG
-    print_tokens(tokens, count);
+    // print_tokens(tokens, count);
 #endif // DEBUG
 
     env->last_tokens = tokens;

@@ -60,11 +60,12 @@ int exec_builtin(env_t* env)
         export(env->last_tokens[1]);
     } else if(STREQ("alias", command)) {
         int pair_index = 1;
-        if(STREQ(env->last_tokens[1], "-p")) {
+        if(env->tokens_count == 1 || STREQ(env->last_tokens[1], "-p")) {
             aliases_print(env->aliases);
             pair_index++;
         }
 
+        if(env->tokens_count == 1) return 0;
         if(env->tokens_count == 2 && STREQ(env->last_tokens[1], "-p")) return 0;
 
         key_value_pair_t pair = key_value_parse(env->last_tokens[pair_index]);

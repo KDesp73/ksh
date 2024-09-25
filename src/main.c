@@ -1,4 +1,3 @@
-#include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +9,8 @@
 #include "env.h"
 #include "history.h"
 #include "interpreter.h"
-#include "processes.h"
-#include "utils.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
-#include "tokenizer.h"
 #include "ui.h"
 #include "globals.h"
 #include "cli.h"
@@ -22,16 +18,20 @@
 static char input[MAX_INPUT_LENGTH] = {0};
 volatile sig_atomic_t interrupted = 0;
 
-void handle_sigint(int sig) {
+void handle_sigint(int sig) 
+{
     interrupted = 1;
     printf("\n");
     fflush(stdout);
 }
 
-void loop(env_t* env){
+void loop(env_t* env)
+{
     for(;;) {
         interrupted = 0;
-        char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", ANSI_BLUE, env->user, ANSI_RESET, ANSI_GREEN, env->cwd, ANSI_RESET);
+        char* bold_blue = ANSI_COMBINE(ANSI_BOLD, ANSI_BLUE);
+        char* bold_green = ANSI_COMBINE(ANSI_BOLD, ANSI_GREEN);
+        char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", bold_blue, env->user, ANSI_RESET, bold_green, env->cwd, ANSI_RESET);
 
         if (interrupted) {
             memset(input, 0, sizeof(input));
@@ -41,6 +41,8 @@ void loop(env_t* env){
 
         ui_prompt(env, prompt, input);
         free(prompt);
+        free(bold_blue);
+        free(bold_green);
 
         if (interrupted) {
             memset(input, 0, sizeof(input));
@@ -51,7 +53,8 @@ void loop(env_t* env){
     }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     signal(SIGINT, handle_sigint);
 
     CliArguments args = clib_cli_make_arguments(2, 

@@ -106,7 +106,12 @@ char* extract_content(const char* str)
     return strdup(str); // Return a copy of the original string
 }
 
-char** insert_char_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count) 
+// Example:
+// dest: [la, ~]
+// src: [ls, -a]
+// index: 0
+// result: [ls, -a, ~]
+char** replace_item_with_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count) 
 {
     if (index >= dest_count) {
         return NULL; // Invalid index
