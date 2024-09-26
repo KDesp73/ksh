@@ -4,7 +4,7 @@
 #include <signal.h>
 extern volatile sig_atomic_t interrupted;
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 #define HISTORY_FILE clib_str_format("%s/.kshrc_history", getenv("HOME"))
 #define KSHRC_FILE clib_str_format("%s/.kshrc", getenv("HOME"))
 
