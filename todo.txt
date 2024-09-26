@@ -4,10 +4,12 @@ TODO: full scripting support
 TODO: all bash builtins along with their options
 TODO: implement $()
 TODO: custom autocomplete
-TODO: change prompt using $PROMPT
-TODO: prompt customize language
 TODO: plugin support
+TODO: relevant history when not empty input
+TODO: dont repeat history logs when scrolling
 DONE: when scrolling history put cursor in the end
 DONE: multiword aliased dont work
 DONE: ctrl+c work properly
 DONE: move cursor with arrows
+DONE: prompt customize language
+DONE: change prompt using $PROMPT

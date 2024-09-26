@@ -55,7 +55,7 @@ int exec_builtin(env_t* env)
     } else if(STREQ("builtins", command)) {
         print_builtins();
     } else if(STREQ("history", command)) {
-        history(env->history);
+        history(env->history, env->tokens_count > 1 && STREQ(env->last_tokens[1], "-a"));
     } else if(STREQ("export", command)) {
         export(env->last_tokens[1]);
     } else if(STREQ("alias", command)) {
@@ -88,10 +88,12 @@ int exec_builtin(env_t* env)
 }
 
 
-void history(const history_t* history)
+void history(const history_t* history, int limited)
 {
-    for(size_t i = history->count-1; i > history->count-1-10; i--){
-        printf("%s\n", history->commands[i]);
+    size_t start = (limited) ? history->count - 16 : 0;
+
+    for(size_t i = start; i < history->count ; i++){
+        printf("%-6zu %s\n", i+1, history->commands[i]);
     }
 }
 
