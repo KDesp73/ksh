@@ -9,6 +9,8 @@
 #include "env.h"
 #include "history.h"
 #include "interpreter.h"
+#include "prompt.h"
+#include "utils.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include "ui.h"
@@ -28,22 +30,20 @@ void loop(env_t* env)
 {
     for(;;) {
         interrupted = 0;
-        char* bold_blue = ANSI_COMBINE(ANSI_BOLD, ANSI_BLUE);
-        char* bold_green = ANSI_COMBINE(ANSI_BOLD, ANSI_GREEN);
-        char* prompt = clib_str_format("[%s%s%s] %s%s%s > ", bold_blue, env->user, ANSI_RESET, bold_green, env->cwd, ANSI_RESET);
+
+        char* prompt_env = getenv("PROMPT");
+        char* prompt = transform_prompt(prompt_env);
+
+        if(!prompt) prompt = strdup("> ");
 
         if (interrupted) {
             memset(input, 0, sizeof(input));
             free(prompt);
-            free(bold_blue);
-            free(bold_green);
             continue;
         }
 
         ui_prompt(env, prompt, input);
         free(prompt);
-        free(bold_blue);
-        free(bold_green);
 
         if (interrupted) {
             memset(input, 0, sizeof(input));

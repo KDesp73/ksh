@@ -2,6 +2,12 @@
 #define UTILS_H
 #include <stdio.h>
 
+
+void print_visible(const char *str);
+int is_empty(const char* str);
+int is_in(const char** list, size_t size, const char* string);
+char* substring(const char* str, int start, int end);
+int search(const char* str, char c);
 int visible_length(const char* str);
 char* extract_content(const char* str);
 char** replace_item_with_array(char** dest, size_t dest_count, char** src, size_t src_count, size_t index, size_t* new_count);

@@ -1,11 +1,102 @@
 #include "utils.h"
-#include "tokenizer.h"
 #define CLIB_IMPLEMENTATION
 #include "clib.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+void print_visible(const char *str)
+{
+    while (*str) {
+        switch (*str) {
+            case '\n':
+                printf("\\n");
+                break;
+            case '\t':
+                printf("\\t");
+                break;
+            case '\r':
+                printf("\\r");
+                break;
+            case '\b':
+                printf("\\b");
+                break;
+            case '\f':
+                printf("\\f");
+                break;
+            case '\\':
+                printf("\\\\");
+                break;
+            case '\0':
+                printf("\\0");
+                break;
+            default:
+                if (isprint((unsigned char)*str)) {
+                    putchar(*str);
+                } else {
+                    // For non-printable characters, show their ASCII value
+                    printf("\\x%02X", (unsigned char)*str);
+                }
+        }
+        str++;
+    }
+}
+
+int is_empty(const char* str)
+{
+    if (str == NULL) {
+        return true; // Treat NULL as empty
+    }
+
+    while (*str) {
+        if (!isspace((unsigned char)*str)) {
+            return false; // Found a non-whitespace character
+        }
+        str++;
+    }
+
+    return true; // All characters were whitespace or the string is empty
+}
+
+int is_in(const char** list, size_t size, const char* string)
+{
+    for(size_t i = 0; i < size; i++){
+        if(STREQ(string, list[i])) return 1;
+    }
+    return 0;
+}
+
+char* substring(const char* str, int start, int end)
+{
+    if (start < 0 || end < 0 || start >= end || start >= strlen(str)) {
+        return NULL; // Invalid indices
+    }
+
+    // Adjust end if it's beyond the string length
+    if (end > strlen(str)) {
+        end = strlen(str);
+    }
+
+    int actual_length = end - start; // Calculate the actual length of the substring
+    char* result = (char*)malloc(actual_length + 1); // Allocate memory for the substring
+    if (result == NULL) {
+        return NULL; // Memory allocation failed
+    }
+
+    strncpy(result, str + start, actual_length); // Copy the desired substring
+    result[actual_length] = '\0'; // Null-terminate the result
+
+    return result; // Return the substring
+}
+
+int search(const char* str, char c)
+{
+    for(size_t i = 0; i < strlen(str); i++){
+        if (c == str[i]) return i;
+    }
+    return -1;
+}
 
 int visible_length(const char* str)
 {

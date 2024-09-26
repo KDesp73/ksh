@@ -25,7 +25,7 @@ int interpret(env_t* env, char* input, int histincl)
     }
 
 #ifdef DEBUG
-    print_tokens(tokens, count);
+    // print_tokens(tokens, count);
 #endif // DEBUG
 
     env->last_tokens = tokens;

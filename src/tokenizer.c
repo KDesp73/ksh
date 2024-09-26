@@ -21,14 +21,6 @@ void free_tokens(char** tokens, size_t count)
 }
 
 
-int search(const char* str, char c){
-    for(size_t i = 0; i < strlen(str); i++){
-        if (c == str[i]) return i;
-    }
-    return -1;
-}
-
-
 char** tokenize(const char* input, size_t *count) 
 {
     char* in = strdup(input);
