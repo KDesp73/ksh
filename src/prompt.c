@@ -9,7 +9,7 @@
 
 #define MAX_PROMPT_LENGTH 256
 
-char* transform_prompt(const char* prompt) {
+char* transform_prompt(const env_t* env, const char* prompt) {
     if (prompt == NULL || is_empty(prompt)) return NULL;
 
     char* result = malloc(MAX_PROMPT_LENGTH);
@@ -52,7 +52,7 @@ char* transform_prompt(const char* prompt) {
         }
 
         // Transform the bracketed part
-        char* transformed = transform_brackets(bracketed_part);
+        char* transformed = transform_brackets(env, bracketed_part);
         free(bracketed_part); // Free the extracted part
 
         if (transformed) {
@@ -77,7 +77,7 @@ char* transform_prompt(const char* prompt) {
     return result; // Return the final transformed prompt
 }
 
-char* transform_brackets(const char* style) {
+char* transform_brackets(const env_t* env, const char* style) {
     char *ps, *pc, *single;
 
     if (style[0] != '{' || style[strlen(style) - 1] != '}') {
@@ -93,13 +93,9 @@ char* transform_brackets(const char* style) {
 
         if (result == NULL) { // Not ANSI
             if (STREQ(single, PROMPT_USER)) {
-                char* login = getlogin();
-                return login ? strdup(login) : NULL; // Check for NULL from getlogin()
+                return strdup(env->user);
             } else if (STREQ(single, PROMPT_CWD)) {
-                char* cwd = getcwd(NULL, 0);
-                char* replaced = clib_str_replace(cwd, getenv("HOME"), "~");
-                free(cwd);
-                return replaced;
+                return strdup(env->cwd);
             } else {
                 fprintf(stderr, "Invalid code: %s\n", single);
                 free(result);

@@ -1,6 +1,7 @@
 #ifndef PROMPT_H
 #define PROMPT_H
 
+#include "env.h"
 #define PROMPT_USER "user"
 #define PROMPT_CWD "cwd"
 
@@ -39,8 +40,8 @@ static char* prompt_colors[] = {
 
 #define PROMPT_STYLE_EXAMPLE "{<style>+<color>}<text>{~}" // {bold+blue}{cwd}{~}
 
-char* transform_brackets(const char* style);
-char* transform_prompt(const char* prompt);
+char* transform_brackets(const env_t* env, const char* style);
+char* transform_prompt(const env_t* env, const char* prompt);
 char* code_to_ansi(const char* code);
 
 #endif // PROMPT_H
