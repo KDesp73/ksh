@@ -34,7 +34,7 @@ void loop(env_t* env)
         char* prompt_env = getenv("PROMPT");
         char* prompt = transform_prompt(env, prompt_env);
 
-        if(!prompt) prompt = strdup("[{bold+blue}{user}{0}] {bold+green}{cwd}{0} > ");
+        if(!prompt || is_empty(prompt_env)) prompt = transform_prompt(env, "[{bold+blue}{user}{0}] {bold+green}{cwd}{0} > ");
 
         if (interrupted) {
             memset(input, 0, sizeof(input));

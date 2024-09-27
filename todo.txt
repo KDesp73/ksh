@@ -13,3 +13,4 @@ DONE: ctrl+c work properly
 DONE: move cursor with arrows
 DONE: prompt customize language
 DONE: change prompt using $PROMPT
+DONE: ability to combine up to 3 colors/styles

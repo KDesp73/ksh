@@ -9,6 +9,9 @@
 
 #define MAX_PROMPT_LENGTH 256
 
+int is_color_code(const char* code);
+int handle_reset_sequence(char* result, const char** start);
+
 char* transform_prompt(const env_t* env, const char* prompt) {
     if (prompt == NULL || is_empty(prompt)) return NULL;
 
@@ -31,10 +34,16 @@ char* transform_prompt(const env_t* env, const char* prompt) {
             strcat(result, start);
             break;
         }
-        
+
         // Copy everything before the '{' into result
         strncat(result, start, end - start);
-        
+
+        // Check for reset sequence {0}
+        if (handle_reset_sequence(result, &end)) {
+            start = end;
+            continue;
+        }
+
         // Find the corresponding '}'
         const char* close = strchr(end, '}');
         if (!close) {
@@ -64,13 +73,6 @@ char* transform_prompt(const env_t* env, const char* prompt) {
         start = close + 1;
     }
 
-    // Remove any trailing ANSI codes if they are just resets
-    // This part ensures there aren't consecutive reset sequences at the end.
-    char* reset_sequence = "\033[0m";
-    if (strlen(result) >= strlen(reset_sequence) && strcmp(result + strlen(result) - strlen(reset_sequence), reset_sequence) == 0) {
-        result[strlen(result) - strlen(reset_sequence)] = '\0'; // Remove last reset
-    }
-
     // Append the reset sequence at the end of the prompt
     strcat(result, "\033[0m"); // ANSI escape code for reset
 
@@ -78,62 +80,65 @@ char* transform_prompt(const env_t* env, const char* prompt) {
 }
 
 char* transform_brackets(const env_t* env, const char* style) {
-    char *ps, *pc, *single;
-
     if (style[0] != '{' || style[strlen(style) - 1] != '}') {
         fprintf(stderr, "Invalid input format: %s. Must follow {style/color+color/style} or {style} or {color}\n", style);
         return NULL; // Invalid input
     }
 
-    int plus_index = search(style, '+');
+    // Remove the curly braces
+    char* style_content = substring(style, 1, strlen(style) - 1);
 
-    if (plus_index < 0) {
-        single = substring(style, 1, strlen(style) - 1);
-        char* result = code_to_ansi(single);
+    // Split by '+'
+    char* tokens[5] = {NULL, NULL, NULL, NULL, NULL}; // Allow up to 4 styles + 1 color
+    int token_count = 0;
 
-        if (result == NULL) { // Not ANSI
-            if (STREQ(single, PROMPT_USER)) {
-                return strdup(env->user);
-            } else if (STREQ(single, PROMPT_CWD)) {
-                return strdup(env->cwd);
+    char* token = strtok(style_content, "+");
+    while (token && token_count < 5) {
+        tokens[token_count++] = token;
+        token = strtok(NULL, "+");
+    }
+
+    // Allocate memory for the resulting ANSI sequence
+    char result[128] = {0};  // Large enough to hold all combined codes
+
+    // Process each token and check if it's a valid style or color
+    int color_applied = 0;
+    for (int i = 0; i < token_count; ++i) {
+        char* ansi_code = code_to_ansi(tokens[i]);
+
+        if (ansi_code) {
+            // Check if this is a color code
+            if (is_color_code(tokens[i])) {
+                if (color_applied) {
+                    fprintf(stderr, "Error: multiple colors in one style group are not allowed.\n");
+                    free(style_content);
+                    return NULL;
+                }
+                color_applied = 1;
+            }
+            strcat(result, ansi_code);
+        } else {
+            // Handle custom codes like {user} or {cwd}
+            if (STREQ(tokens[i], PROMPT_USER)) {
+                strcat(result, env->user);
+            } else if (STREQ(tokens[i], PROMPT_CWD)) {
+                strcat(result, env->cwd);
             } else {
-                fprintf(stderr, "Invalid code: %s\n", single);
-                free(result);
+                fprintf(stderr, "Invalid code: %s\n", tokens[i]);
+                free(style_content);
                 return NULL;
             }
         }
-        free(single);
-
-        return strdup(result);
     }
 
-    ps = substring(style, 1, plus_index);
-    pc = substring(style, plus_index + 1, strlen(style) - 1);
+    free(style_content);
 
-    char* ansi_ps = code_to_ansi(ps);
-    free(ps);
-    if (ansi_ps == NULL) {
-        fprintf(stderr, "Invalid ANSI code: %s\n", ps);
-        return NULL;
-    }
-
-    char* ansi_pc = code_to_ansi(pc);
-    free(pc);
-    if (ansi_pc == NULL) {
-        fprintf(stderr, "Invalid ANSI code: %s\n", pc);
-        return NULL;
-    }
-
-    char* combined = ANSI_COMBINE(ansi_ps, ansi_pc);
-
-    return combined;
+    // Return the combined ANSI sequence
+    return strdup(result);
 }
 
-
-#define ANSI_RESET_2 ANSI_RESET ANSI_RESET
-char* code_to_ansi(const char* code)
-{
-    if(STREQ(code, PROMPT_RESET)) return ANSI_RESET ANSI_RESET;
+char* code_to_ansi(const char* code) {
+    if(STREQ(code, PROMPT_RESET)) return ANSI_RESET;
     else if(STREQ(code, PROMPT_BOLD)) return ANSI_BOLD;
     else if(STREQ(code, PROMPT_UNDERLINE)) return ANSI_UNDERLINE;
     else if(STREQ(code, PROMPT_ITALIC)) return ANSI_ITALIC;
@@ -148,5 +153,20 @@ char* code_to_ansi(const char* code)
     else if(STREQ(code, PROMPT_DGREY)) return ANSI_DGREY;
 
     return NULL;
+}
+
+int is_color_code(const char* code) {
+    return STREQ(code, PROMPT_BLACK) || STREQ(code, PROMPT_RED) || STREQ(code, PROMPT_GREEN) ||
+           STREQ(code, PROMPT_YELLOW) || STREQ(code, PROMPT_BLUE) || STREQ(code, PROMPT_PURPLE) ||
+           STREQ(code, PROMPT_CYAN) || STREQ(code, PROMPT_LGREY) || STREQ(code, PROMPT_DGREY);
+}
+
+int handle_reset_sequence(char* result, const char** start) {
+    if (strncmp(*start, "{0}", 3) == 0) {
+        strcat(result, "\033[0m"); // ANSI escape code for reset
+        *start += 3; // Move past the "{0}"
+        return 1; // Reset applied
+    }
+    return 0; // No reset found
 }
 
