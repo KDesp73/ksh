@@ -6,6 +6,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+int starts_with(const char* str, const char* prefix)
+{
+    if (str == NULL || prefix == NULL) {
+        return 0; // Return false if either string is null
+    }
+    
+    size_t len_prefix = strlen(prefix);
+    size_t len_str = strlen(str);
+
+    // If the prefix is longer than the string, it cannot start with the prefix
+    if (len_prefix > len_str) {
+        return 0;
+    }
+
+    // Compare the beginning of 'str' with 'prefix'
+    return strncmp(str, prefix, len_prefix) == 0;
+}
+
+
 void print_visible(const char *str)
 {
     while (*str) {

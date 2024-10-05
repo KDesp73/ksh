@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 
+int starts_with(const char* str, const char* prefix);
 void print_visible(const char *str);
 int is_empty(const char* str);
 int is_in(const char** list, size_t size, const char* string);

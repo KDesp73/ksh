@@ -10,6 +10,7 @@ typedef struct {
     size_t count;
 } history_t;
 
+history_t* history_init();
 void history_add(history_t* history, const char* command);
 void history_clear(history_t* history);
 char* history_to_string(const history_t* history);

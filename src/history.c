@@ -31,11 +31,14 @@ char* history_to_string(const history_t* history)
 
 void history_add(history_t* history, const char* command) 
 {
+    // If history is full, remove the first element and shift everything left
     if (history->count >= HISTORY_CAPACITY) {
         free(history->commands[0]);
+        
         for (size_t i = 1; i < history->count; i++) {
             history->commands[i - 1] = history->commands[i];
         }
+
         history->count--;
     }
 
@@ -60,10 +63,16 @@ history_t* history_load()
 
     char* input_copy = strdup(in);
     if (!input_copy) {
+        free(in);
         return NULL;
     }
 
     history_t* h = (history_t*) malloc(sizeof(history_t));
+    if (!h) {
+        fprintf(stderr, "Failed allocating memory for history");
+        free(in);
+        return NULL;
+    }
 
 
     char* token = strtok(input_copy, "\n");
@@ -74,6 +83,7 @@ history_t* history_load()
     h->commands = (char**)malloc(capacity * sizeof(char*));
     if (!h->commands) {
         free(input_copy);
+        free(in);
         return NULL;
     }
 
@@ -84,6 +94,7 @@ history_t* history_load()
                 free(h->commands[j]);
             }
             free(h->commands);
+            free(in);
             free(input_copy);
             return NULL;
         }
@@ -93,6 +104,28 @@ history_t* history_load()
     }
 
     free(input_copy);
+    free(in);
+
+    h->commands[h->count] = NULL;
+
+    return h;
+}
+
+
+history_t* history_init()
+{
+    history_t* h = (history_t*) malloc(sizeof(history_t));
+    if (!h) {
+        fprintf(stderr, "Failed allocating memory for history");
+        return NULL;
+    }
+    h->count = 0;
+    
+    size_t capacity = HISTORY_CAPACITY;
+    h->commands = (char**)malloc(capacity * sizeof(char*));
+    if (!h->commands) {
+        return NULL;
+    }
 
     h->commands[h->count] = NULL;
 

@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- "added -a option to history"
+- Added -a option to history
 - Added prompt templating
 
 ### Changed

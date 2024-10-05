@@ -246,6 +246,7 @@ char** replace_aliases_rec(alias_table_t* table, char** tokens, size_t* count, c
 
             size_t alias_tokens_count;
             char** alias_tokens = tokenize(val, &alias_tokens_count);
+
             if (alias_tokens == NULL) {
                 continue;
             }

@@ -63,6 +63,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <time.h>
 
 // START [TYPES] START //
 typedef const char * Cstr;
@@ -264,6 +265,31 @@ CLIBAPI void clib_log(int log_level, char* format, ...);
         LOG(stdout, "DEMO", #expr);   \
         expr;                         \
     } while(0)
+
+#ifdef DEBUG
+#define REMOTE_LOG(term, format, ...) \
+    do { \
+        static FILE *log_terminal = NULL; \
+        if (log_terminal == NULL) { \
+            log_terminal = fopen(term, "w"); \
+            if (log_terminal == NULL) { \
+                perror("Error opening remote terminal for logging"); \
+                exit(EXIT_FAILURE); \
+            } \
+        } \
+        time_t t = time(NULL); \
+        struct tm *tm_info = localtime(&t); \
+        char buffer[26]; \
+        strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info); \
+        fprintf(log_terminal, "[%s] ", buffer); \
+        fprintf(log_terminal, format, ##__VA_ARGS__); \
+        fprintf(log_terminal, "\n"); \
+        fflush(log_terminal); \
+    } while (0)
+#else
+#define REMOTE_LOG(term, format, ...)
+#endif // DEBUG
+
 
 // MENUS
 #ifdef _WIN32

@@ -15,8 +15,10 @@ int interpret(env_t* env, char* input, int histincl)
     int bg = 0;
     size_t count;
     char** tokens = tokenize(input, &count);
-    tokens = replace_env(tokens, count);
-    tokens = replace_aliases(env->aliases, tokens, &count);
+    if (!STREQ(tokens[0], "alias")){
+        tokens = replace_aliases(env->aliases, tokens, &count);
+        tokens = replace_env(tokens, count);
+    }
 
     if (!tokens){
         env->tokens_count = 0;
