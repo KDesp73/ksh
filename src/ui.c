@@ -59,39 +59,31 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 pos++;
                 move_right(1);
             }
-        } else if (c == CLIB_KEY_ARROW_UP) {
-            if (history_index > 0) {
-                history_index--;
+        } else if (c == CLIB_KEY_ARROW_UP || c == CLIB_KEY_ARROW_DOWN) {
+            int direction = (c == CLIB_KEY_ARROW_UP) ? -1 : 1;
 
-                while (history_index > 0 && STREQ(env->history->commands[history_index], env->history->commands[history_index - 1])) {
-                    history_index--;
+            if ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count)) {
+                history_index += direction;
+
+                // Skip duplicate commands in history
+                while ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count - 1)) {
+                    if (!STREQ(env->history->commands[history_index], env->history->commands[history_index + direction])) {
+                        break;
+                    }
+                    history_index += direction;
+                }
+
+                if (history_index == env->history->count) {
+                    // Clear input if we're past the last history entry
+                    strcpy(input, "");
+                    pos = len = 0;
+                } else if (history_index >= 0 && history_index < env->history->count) {
+                    // Copy history command to input
+                    strcpy(input, env->history->commands[history_index]); 
+                    pos = len = strlen(input);
+                    move_right(pos);
                 }
             }
-
-            if (history_index >= 0 && history_index < env->history->count) {
-                strcpy(input, env->history->commands[history_index]); 
-                pos = len = strlen(input);
-                move_right(pos);
-            }
-
-        } else if (c == CLIB_KEY_ARROW_DOWN) {
-            if (history_index < env->history->count) {
-                history_index++;
-
-                while (history_index < env->history->count - 1 && STREQ(env->history->commands[history_index], env->history->commands[history_index + 1])) {
-                    history_index++;
-                }
-            }
-
-    // Handle the case where we're back at the current input (no history)
-    if (history_index == env->history->count) {
-        strcpy(input, ""); // Clear input if we're past the last history entry
-        pos = len = 0;
-    } else if (history_index < env->history->count) {
-        strcpy(input, env->history->commands[history_index]); 
-        pos = len = strlen(input);
-        move_right(pos);
-    }
         } else if (c == CTRL_KEY('l')) {
             system("clear");
             printf("%s%s", prompt, input);
