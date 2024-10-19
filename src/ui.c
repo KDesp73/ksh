@@ -112,22 +112,25 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 }
 
                 if (history_index == env->history->count) {
-                    // If we're past the last history entry, reset to the user's original input
-                    strcpy(input, user_input);
-                    pos = len = strlen(input);
-                    move_right(pos);
+                    // If we're past the last history entry, only reset if input matches user_input
+                    if (is_empty(user_input) || starts_with(input, user_input)) {
+                        strcpy(input, user_input);
+                        pos = len = strlen(input);
+                        move_right(pos);
 
-                    // Clear user_input once it's restored
-                    strcpy(user_input, "");
-                    // Reset last accepted command
-                    strcpy(last_accepted_cmd, "");
+                        // Clear user_input once it's restored
+                        strcpy(user_input, "");
+                        // Reset last accepted command
+                        strcpy(last_accepted_cmd, "");
+                    }
                 } else if (history_index >= 0 && history_index < env->history->count) {
                     // Copy history command to input
                     strcpy(input, env->history->commands[history_index]);
                     pos = len = strlen(input);
                     move_right(pos);
                 }
-            }        } else if (c == CTRL_KEY('l')) {
+            }
+        } else if (c == CTRL_KEY('l')) {
             system("clear");
             printf("%s%s", prompt, input);
             move_right(pos);
