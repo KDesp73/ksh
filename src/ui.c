@@ -26,7 +26,7 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
     int pos = 0;
     int len = 0;
     int history_index = env->history->count;
-    char user_input[] = {0};
+    char user_input[MAX_INPUT_LENGTH] = {0};
     strcpy(user_input, "");
 
     printf("%s", prompt);
@@ -47,7 +47,8 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             if (pos > 0) {
                 delete_character(input, pos - 1, len);
                 pos = clamp(pos - 1, 0, len - 1);
-                len--;
+                // len--;
+                len = strlen(input);
             }
             strcpy(user_input, input);
             history_index = env->history->count;
@@ -75,21 +76,13 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 // Skip duplicate commands in history
                 while ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count - 1)) {
                     if(
-                        starts_with(env->history->commands[history_index], user_input) ||
+                        starts_with(env->history->commands[history_index+1], user_input) ||
                         !STREQ(env->history->commands[history_index], env->history->commands[history_index + direction])
                     ){
-                        REMOTE_LOG("/dev/pts/3", "in");
                         break;
                     }
                     history_index += direction;
                 }
-
-                REMOTE_LOG("/dev/pts/3", "");
-                REMOTE_LOG("/dev/pts/3", "userinput empty: %s", BOOL(is_empty(user_input)));
-                REMOTE_LOG("/dev/pts/3", "user_input: '%s'", user_input);
-                REMOTE_LOG("/dev/pts/3", "historycommand: %s", env->history->commands[history_index]);
-                REMOTE_LOG("/dev/pts/3", "starts_with: %s", BOOL(starts_with(env->history->commands[history_index], user_input)));
-                REMOTE_LOG("/dev/pts/3", "");
 
                 if (history_index == env->history->count) {
                     // If we're past the last history entry, reset to the user's original input
