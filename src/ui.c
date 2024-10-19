@@ -18,6 +18,7 @@ void delete_character(char input[], int pos, int length);
 char** match_history(char* match, char** history, size_t *count);
 void loop_through_history(char** history, size_t count, int* history_index, char c);
 
+
 void ui_prompt(env_t* env, const char* prompt, char input[]) 
 {
     clib_disable_input_buffering();
@@ -47,8 +48,7 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             if (pos > 0) {
                 delete_character(input, pos - 1, len);
                 pos = clamp(pos - 1, 0, len - 1);
-                // len--;
-                len = strlen(input);
+                len--;
             }
             strcpy(user_input, input);
             history_index = env->history->count;
@@ -65,28 +65,43 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
         } else if (c == CLIB_KEY_ARROW_UP || c == CLIB_KEY_ARROW_DOWN) {
             int direction = (c == CLIB_KEY_ARROW_UP) ? -1 : 1;
 
-            // Save user input if the up arrow is pressed and the input is not empty
-            if (c == CLIB_KEY_ARROW_UP && !is_empty(input) && history_index == env->history->count) {
-                strcpy(user_input, input);  // Save current input from the user
+            // Save user input if the up arrow 
+            // is pressed and the input is not empty
+            if (
+                c == CLIB_KEY_ARROW_UP && 
+                !is_empty(input) && history_index == env->history->count
+            ) {
+                strcpy(user_input, input);
             }
 
-            if ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count)) {
+            if (
+                (direction == -1 && history_index > 0) || 
+                (direction == 1 && history_index < env->history->count)
+            ) {
                 history_index += direction;
 
-                // Skip duplicate commands in history
+                // Loop to skip irrelevant commands
                 while ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count - 1)) {
-                    if(
-                        starts_with(env->history->commands[history_index+1], user_input) ||
-                        !STREQ(env->history->commands[history_index], env->history->commands[history_index + direction])
-                    ){
-                        break;
+                    const char* current_cmd = env->history->commands[history_index];
+
+                    // Only show commands that start with user_input if it's not empty
+                    if (is_empty(user_input) || starts_with(current_cmd, user_input)) {
+                        // Skip duplicates
+                        if (history_index + direction >= 0 && history_index + direction < env->history->count &&
+                                !STREQ(current_cmd, env->history->commands[history_index + direction])) 
+                        {
+                            REMOTE_LOG("/dev/pts/0", "Accepted [%zu](%s)", history_index, current_cmd);
+                            break;
+                        }
                     }
+                    REMOTE_LOG("/dev/pts/0", "Skipped [%zu](%s)", history_index, current_cmd);
                     history_index += direction;
                 }
 
                 if (history_index == env->history->count) {
-                    // If we're past the last history entry, reset to the user's original input
-                    strcpy(input, user_input);  // Restore the user's original input
+                    // If we're past the last history
+                    // entry, reset to the user's original input
+                    strcpy(input, user_input);
                     pos = len = strlen(input);
                     move_right(pos);
 
