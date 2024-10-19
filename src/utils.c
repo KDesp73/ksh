@@ -8,8 +8,8 @@
 
 int starts_with(const char* str, const char* prefix)
 {
-    if (str == NULL || prefix == NULL) {
-        return 0; // Return false if either string is null
+    if (str == NULL || prefix == NULL || is_empty(prefix)) {
+        return 0;
     }
     
     size_t len_prefix = strlen(prefix);

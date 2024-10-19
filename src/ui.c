@@ -49,6 +49,8 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 pos = clamp(pos - 1, 0, len - 1);
                 len--;
             }
+            strcpy(user_input, input);
+            history_index = env->history->count;
         } else if (c == CLIB_KEY_ARROW_LEFT) {
             if (pos > 0) { 
                 pos--;
@@ -62,21 +64,41 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
         } else if (c == CLIB_KEY_ARROW_UP || c == CLIB_KEY_ARROW_DOWN) {
             int direction = (c == CLIB_KEY_ARROW_UP) ? -1 : 1;
 
+            // Save user input if the up arrow is pressed and the input is not empty
+            if (c == CLIB_KEY_ARROW_UP && !is_empty(input) && history_index == env->history->count) {
+                strcpy(user_input, input);  // Save current input from the user
+            }
+
             if ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count)) {
                 history_index += direction;
 
                 // Skip duplicate commands in history
                 while ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count - 1)) {
-                    if (!STREQ(env->history->commands[history_index], env->history->commands[history_index + direction])) {
+                    if(
+                        starts_with(env->history->commands[history_index], user_input) ||
+                        !STREQ(env->history->commands[history_index], env->history->commands[history_index + direction])
+                    ){
+                        REMOTE_LOG("/dev/pts/3", "in");
                         break;
                     }
                     history_index += direction;
                 }
 
+                REMOTE_LOG("/dev/pts/3", "");
+                REMOTE_LOG("/dev/pts/3", "userinput empty: %s", BOOL(is_empty(user_input)));
+                REMOTE_LOG("/dev/pts/3", "user_input: '%s'", user_input);
+                REMOTE_LOG("/dev/pts/3", "historycommand: %s", env->history->commands[history_index]);
+                REMOTE_LOG("/dev/pts/3", "starts_with: %s", BOOL(starts_with(env->history->commands[history_index], user_input)));
+                REMOTE_LOG("/dev/pts/3", "");
+
                 if (history_index == env->history->count) {
-                    // Clear input if we're past the last history entry
-                    strcpy(input, "");
-                    pos = len = 0;
+                    // If we're past the last history entry, reset to the user's original input
+                    strcpy(input, user_input);  // Restore the user's original input
+                    pos = len = strlen(input);
+                    move_right(pos);
+
+                    // Clear user_input once it's restored
+                    strcpy(user_input, "");
                 } else if (history_index >= 0 && history_index < env->history->count) {
                     // Copy history command to input
                     strcpy(input, env->history->commands[history_index]); 

@@ -267,25 +267,9 @@ CLIBAPI void clib_log(int log_level, char* format, ...);
     } while(0)
 
 #ifdef DEBUG
+CLIBAPI void remote_log(const char *term, const char *format, ...);
 #define REMOTE_LOG(term, format, ...) \
-    do { \
-        static FILE *log_terminal = NULL; \
-        if (log_terminal == NULL) { \
-            log_terminal = fopen(term, "w"); \
-            if (log_terminal == NULL) { \
-                perror("Error opening remote terminal for logging"); \
-                exit(EXIT_FAILURE); \
-            } \
-        } \
-        time_t t = time(NULL); \
-        struct tm *tm_info = localtime(&t); \
-        char buffer[26]; \
-        strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info); \
-        fprintf(log_terminal, "[%s] ", buffer); \
-        fprintf(log_terminal, format, ##__VA_ARGS__); \
-        fprintf(log_terminal, "\n"); \
-        fflush(log_terminal); \
-    } while (0)
+    remote_log(term, format, ##__VA_ARGS__)
 #else
 #define REMOTE_LOG(term, format, ...)
 #endif // DEBUG
@@ -432,6 +416,35 @@ CLIBAPI int clib_menu(Cstr title, int color, ClibPrintOptionFunc print_option, C
 
 // START [IMPLEMENTATIONS] START //
 #ifdef CLIB_IMPLEMENTATION
+CLIBAPI void remote_log(const char *term, const char *format, ...)
+{
+    static FILE *log_terminal = NULL;
+
+    if (log_terminal == NULL) {
+        log_terminal = fopen(term, "w");
+        if (log_terminal == NULL) {
+            perror("Error opening remote terminal for logging");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // // Get current time
+    // time_t t = time(NULL);
+    // struct tm *tm_info = localtime(&t);
+    // char buffer[26];
+    // strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+    //
+    // // Write timestamp to log
+    // fprintf(log_terminal, "[%s] ", buffer);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(log_terminal, format, args);
+    va_end(args);
+
+    fprintf(log_terminal, "\n");
+    fflush(log_terminal);
+}
 
 CLIBAPI char* clib_ansi_combine(const char* seq1, const char* seq2)
 {
