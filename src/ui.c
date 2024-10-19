@@ -64,9 +64,10 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             }
         } else if (c == CLIB_KEY_ARROW_UP || c == CLIB_KEY_ARROW_DOWN) {
             int direction = (c == CLIB_KEY_ARROW_UP) ? -1 : 1;
-            static char last_accepted_cmd[MAX_INPUT_LENGTH] = "";  // To track the last accepted history command
+            static char last_accepted_cmd[MAX_INPUT_LENGTH] = "";
 
-            // Save user input if the up arrow is pressed and the input is not empty
+            // Save user input if the up arrow 
+            // is pressed and the input is not empty
             if (c == CLIB_KEY_ARROW_UP && !is_empty(input) && history_index == env->history->count) {
                 strcpy(user_input, input);
             }
@@ -74,37 +75,37 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             if ((direction == -1 && history_index > 0) || (direction == 1 && history_index < env->history->count)) {
                 history_index += direction;
 
-                // Loop to skip irrelevant commands, duplicates, and commands that match the last accepted command
+                // Loop to skip irrelevant commands, 
+                // duplicates, and commands that 
+                // match the last accepted command
                 while (history_index >= 0 && history_index < env->history->count) {
                     const char* current_cmd = env->history->commands[history_index];
 
-                    // Skip if the current command is identical to user_input or identical to the last accepted command
-                    if (STREQ(current_cmd, user_input) || STREQ(current_cmd, last_accepted_cmd)) {
-                        REMOTE_LOG("/dev/pts/0", "Skipped identical [%zu](%s)", history_index, current_cmd);
-                    }
-                    // Only show commands that start with user_input if it's not empty
+                    // Skip if the current command 
+                    // is identical to user_input 
+                    // or identical to the 
+                    // last accepted command
+                    if (STREQ(current_cmd, user_input) || STREQ(current_cmd, last_accepted_cmd)) {} // Do nothing
                     else if (is_empty(user_input) || starts_with(current_cmd, user_input)) {
-                        // Skip duplicates: only move forward if the next command is different
+                        // Skip duplicates: only move 
+                        // forward if the next 
+                        // command is different
                         if (history_index + direction >= 0 && history_index + direction < env->history->count) {
                             const char* next_cmd = env->history->commands[history_index + direction];
                             if (!STREQ(current_cmd, next_cmd)) {
-                                // Accept and track the current command
                                 strcpy(last_accepted_cmd, current_cmd);
-                                REMOTE_LOG("/dev/pts/0", "Accepted [%zu](%s)", history_index, current_cmd);
                                 break;
                             }
                         } else {
-                            // Accept and track the current command if no duplicate to check
                             strcpy(last_accepted_cmd, current_cmd);
-                            REMOTE_LOG("/dev/pts/0", "Accepted (no duplicate to check) [%zu](%s)", history_index, current_cmd);
                             break;
                         }
                     }
 
-                    REMOTE_LOG("/dev/pts/0", "Skipped [%zu](%s)", history_index, current_cmd);
                     history_index += direction;
 
-                    // Prevent underflow in case history_index goes negative
+                    // Prevent underflow in 
+                    // case history_index goes negative
                     if (history_index < 0) {
                         history_index = 0;
                         break;
@@ -112,15 +113,15 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
                 }
 
                 if (history_index == env->history->count) {
-                    // If we're past the last history entry, only reset if input matches user_input
+                    // If we're past the last history 
+                    // entry, only reset if 
+                    // input matches user_input
                     if (is_empty(user_input) || starts_with(input, user_input)) {
                         strcpy(input, user_input);
                         pos = len = strlen(input);
                         move_right(pos);
 
-                        // Clear user_input once it's restored
                         strcpy(user_input, "");
-                        // Reset last accepted command
                         strcpy(last_accepted_cmd, "");
                     }
                 } else if (history_index >= 0 && history_index < env->history->count) {
@@ -134,7 +135,23 @@ void ui_prompt(env_t* env, const char* prompt, char input[])
             system("clear");
             printf("%s%s", prompt, input);
             move_right(pos);
-        } else if (c >= 32 && c < 127 && len < MAX_INPUT_LENGTH - 1) {
+        } else if (c == CTRL_KEY('u')) {
+            static int cursor_index = 0;
+
+            switch (cursor_index) {
+            case 0: 
+                ANSI_CURSOR_UNDERSCORE();
+                break;
+            case 1: 
+                ANSI_CURSOR_BAR();
+                break;
+            case 2: 
+                ANSI_CURSOR_BLOCK();
+                break;
+            }
+
+            cursor_index = clib_eu_mod(cursor_index+1, 3);
+        }else if (c >= 32 && c < 127 && len < MAX_INPUT_LENGTH - 1) {
             insert_character(input, c, pos, len);
             pos++;
             len++;

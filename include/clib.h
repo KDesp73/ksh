@@ -115,6 +115,9 @@ typedef struct {
 #define ANSI_MOVE_CURSOR_RIGHT(x) printf("\e[%dC", x);
 #define ANSI_MOVE_CURSOR_LEFT(x) printf("\e[%dD", x);
 #define ANSI_CLEAR_BELOW_CURSOR printf("\e[J")
+#define ANSI_CURSOR_BLOCK() printf("\033[1 q");
+#define ANSI_CURSOR_UNDERSCORE() printf("\033[4 q");
+#define ANSI_CURSOR_BAR() printf("\033[5 q");
 
 CLIBAPI char* clib_ansi_combine(const char* seq1, const char* seq2);
 #define ANSI_COMBINE(seq1, seq2) \

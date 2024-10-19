@@ -44,6 +44,7 @@ int exec_builtin(env_t* env)
     } else if(STREQ("echo", command)) {
         echo(env->last_tokens, env->tokens_count);
     } else if(STREQ("exit", command)) {
+        ANSI_CURSOR_BLOCK();
         if (env->tokens_count == 1)
             exit(0);
         else {
