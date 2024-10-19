@@ -22,7 +22,7 @@ $ git clone https://github.com/KDesp73/ksh --depth=1
 $ cd ksh
 
 # 1. Build
-$ make type=RELEASE
+$ make type=RELEASE all
 
 # 2. Install
 $ make install

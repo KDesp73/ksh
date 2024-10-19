@@ -5,7 +5,6 @@ TODO: all bash builtins along with their options
 TODO: implement $()
 TODO: custom autocomplete
 TODO: plugin support
-TODO: relevant history when not empty input
 TODO: clean / refactor
 DONE: when scrolling history put cursor in the end
 DONE: multiword aliased dont work
@@ -15,3 +14,4 @@ DONE: prompt customize language
 DONE: change prompt using $PROMPT
 DONE: ability to combine up to 3 colors/styles
 DONE: dont repeat history logs when scrolling
+DONE: relevant history when not empty input

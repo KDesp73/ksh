@@ -266,12 +266,12 @@ CLIBAPI void clib_log(int log_level, char* format, ...);
         expr;                         \
     } while(0)
 
-#ifdef DEBUG
 CLIBAPI void remote_log(const char *term, const char *format, ...);
-#define REMOTE_LOG(term, format, ...) \
-    remote_log(term, format, ##__VA_ARGS__)
+#ifdef DEBUG
+    #define REMOTE_LOG(term, format, ...) \
+        remote_log(term, format, ##__VA_ARGS__)
 #else
-#define REMOTE_LOG(term, format, ...)
+    #define REMOTE_LOG(term, format, ...)
 #endif // DEBUG
 
 
